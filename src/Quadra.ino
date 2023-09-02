@@ -1,5 +1,5 @@
 /*
-  Quadra Editor - Firmware Rev 1.4
+  Quadra Editor - Firmware Rev 1.5
 
   Includes code by:
     Dave Benn - Handling MUXs, a few other bits and original inspiration  https://www.notesandvolts.com/2019/01/teensy-synth-part-10-hardware.html
@@ -177,8 +177,12 @@ void updateleadMix() {
 }
 
 void updatephaserSpeed() {
-  showCurrentParameterPage("Sweep Speed", String(phaserSpeedstr) + " Hz");
-  midiCCOut(CCphaserSpeed, phaserSpeed);
+  if (modSourcePhaser == 2) {
+    showCurrentParameterPage("Sweep Speed", String(phaserSpeedstr) + " Hz");
+    midiCCOut(CCphaserSpeed, phaserSpeed);
+  } else {
+    showCurrentParameterPage("Sweep Speed", String("Inactive"));
+  }
 }
 
 void updatepolyMix() {
@@ -217,8 +221,13 @@ void updatebassMix() {
 }
 
 void updatechorusSpeed() {
-  showCurrentParameterPage("Chorus Speed", String(chorusSpeedstr) + " Hz");
-  midiCCOut(CCchorusSpeed, chorusSpeed);
+  if (chorusFlange > 63) {
+    showCurrentParameterPage("Flanger Speed", String(chorusSpeedstr) + " Hz");
+    midiCCOut(CCchorusSpeed, chorusSpeed);
+  } else {
+    showCurrentParameterPage("Chorus Speed", String(chorusSpeedstr) + " Hz");
+    midiCCOut(CCchorusSpeed, chorusSpeed);
+  }
 }
 
 void updatelfoDelay() {
@@ -232,8 +241,13 @@ void updatelfoDelay() {
 }
 
 void updatechorusDepth() {
-  showCurrentParameterPage("Chorus Depth", String(chorusDepthstr) + " %");
-  midiCCOut(CCchorusDepth, chorusDepth);
+  if (chorusFlange > 63) {
+    showCurrentParameterPage("Flanger Depth", String(chorusDepthstr) + " %");
+    midiCCOut(CCchorusDepth, chorusDepth);
+  } else {
+    showCurrentParameterPage("Chorus Depth", String(chorusDepthstr) + " %");
+    midiCCOut(CCchorusDepth, chorusDepth);
+  }
 }
 
 void updatepolyPWM() {
@@ -242,8 +256,12 @@ void updatepolyPWM() {
 }
 
 void updatechorusRes() {
-  showCurrentParameterPage("Flanger Res", String(chorusResstr) + " %");
-  midiCCOut(CCchorusRes, chorusRes);
+  if (chorusFlange > 63) {
+    showCurrentParameterPage("Flanger Res", String(chorusResstr) + " %");
+    midiCCOut(CCchorusRes, chorusRes);
+  } else {
+    showCurrentParameterPage("Flanger Res", String("Inactive"));
+  }
 }
 
 void updatepolyPW() {
@@ -1577,12 +1595,10 @@ void myControlChange(byte channel, byte control, int value) {
       break;
 
     case CCchorusRes:
-      if (chorusFlange > 63) {
-        chorusRes = value;
-        chorusResmap = map(chorusRes, 0, 127, 0, 94);
-        chorusResstr = QUADRAEFFECTSRES[chorusResmap];  // for display
-        updatechorusRes();
-      }
+      chorusRes = value;
+      chorusResmap = map(chorusRes, 0, 127, 0, 94);
+      chorusResstr = QUADRAEFFECTSRES[chorusResmap];  // for display
+      updatechorusRes();
       break;
 
     case CCpolyPW:
@@ -2686,7 +2702,7 @@ void checkMux() {
 
   if (mux1Read > (mux1ValuesPrev[muxInput] + QUANTISE_FACTOR) || mux1Read < (mux1ValuesPrev[muxInput] - QUANTISE_FACTOR)) {
     mux1ValuesPrev[muxInput] = mux1Read;
-    mux1Read = (mux1Read >> resolutionFrig); // Change range to 0-127
+    mux1Read = (mux1Read >> resolutionFrig);  // Change range to 0-127
 
     switch (muxInput) {
       case MUX1_leadMix:
@@ -2745,7 +2761,7 @@ void checkMux() {
 
   if (mux2Read > (mux2ValuesPrev[muxInput] + QUANTISE_FACTOR) || mux2Read < (mux2ValuesPrev[muxInput] - QUANTISE_FACTOR)) {
     mux2ValuesPrev[muxInput] = mux2Read;
-    mux2Read = (mux2Read >> resolutionFrig); // Change range to 0-127
+    mux2Read = (mux2Read >> resolutionFrig);  // Change range to 0-127
 
     switch (muxInput) {
       case MUX2_bassPitch:
@@ -2804,7 +2820,7 @@ void checkMux() {
 
   if (mux3Read > (mux3ValuesPrev[muxInput] + QUANTISE_FACTOR) || mux3Read < (mux3ValuesPrev[muxInput] - QUANTISE_FACTOR)) {
     mux3ValuesPrev[muxInput] = mux3Read;
-    mux3Read = (mux3Read >> resolutionFrig); // Change range to 0-127
+    mux3Read = (mux3Read >> resolutionFrig);  // Change range to 0-127
 
     switch (muxInput) {
       case MUX3_phaserSpeed:
@@ -2862,7 +2878,7 @@ void checkMux() {
 
   if (mux4Read > (mux4ValuesPrev[muxInput] + QUANTISE_FACTOR) || mux4Read < (mux4ValuesPrev[muxInput] - QUANTISE_FACTOR)) {
     mux4ValuesPrev[muxInput] = mux4Read;
-    mux4Read = (mux4Read >> resolutionFrig); // Change range to 0-127
+    mux4Read = (mux4Read >> resolutionFrig);  // Change range to 0-127
 
     switch (muxInput) {
       case MUX4_echoTime:
@@ -2905,7 +2921,7 @@ void checkMux() {
 
   if (mux5Read > (mux5ValuesPrev[muxInput] + QUANTISE_FACTOR) || mux5Read < (mux5ValuesPrev[muxInput] - QUANTISE_FACTOR)) {
     mux5ValuesPrev[muxInput] = mux5Read;
-    mux5Read = (mux5Read >> resolutionFrig); // Change range to 0-127
+    mux5Read = (mux5Read >> resolutionFrig);  // Change range to 0-127
 
     switch (muxInput) {
       case MUX5_portVCO1:

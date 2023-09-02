@@ -334,6 +334,13 @@ void setupHardware()
   digitalWrite(MUX_2, LOW);
   digitalWrite(MUX_3, LOW);
 
+    //Mux ADC
+  pinMode(MUX1_S, INPUT_DISABLE);
+  pinMode(MUX2_S, INPUT_DISABLE);
+  pinMode(MUX3_S, INPUT_DISABLE);
+  pinMode(MUX4_S, INPUT_DISABLE);
+  pinMode(MUX5_S, INPUT_DISABLE);
+
   //Switches
   pinMode(RECALL_SW, INPUT_PULLUP); //On encoder
   pinMode(SAVE_SW, INPUT_PULLUP);
