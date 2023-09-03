@@ -1927,14 +1927,14 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCvco1Range:
       vco1Range = value;
-      vco1Rangemap = map(vco1Range, 0, 127, 0, 48);
+      vco1Rangemap = map(vco1Range, 0, 127, 0, 98);
       vco1Rangestr = QUADRASEMITONES[vco1Rangemap];
       updatevco1Range();
       break;
 
     case CCvco2Range:
       vco2Range = value;
-      vco2Rangemap = map(vco2Range, 0, 127, 0, 48);
+      vco2Rangemap = map(vco2Range, 0, 127, 0, 98);
       vco2Rangestr = QUADRASEMITONES[vco2Rangemap];
       updatevco2Range();
       break;
