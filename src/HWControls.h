@@ -3,6 +3,7 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 #include <Bounce.h>
+#include "TButton.h"
 #include <ADC.h>
 #include <ADC_util.h>
 
@@ -302,7 +303,8 @@ Bounce recallButton = Bounce(RECALL_SW, DEBOUNCE); //On encoder
 boolean recall = true; //Hack for recall button
 Bounce saveButton = Bounce(SAVE_SW, DEBOUNCE);
 boolean del = true; //Hack for save button
-Bounce settingsButton = Bounce(SETTINGS_SW, DEBOUNCE);
+//Bounce settingsButton = Bounce(SETTINGS_SW, DEBOUNCE);
+TButton settingsButton{SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
 boolean reini = true; //Hack for settings button
 Bounce backButton = Bounce(BACK_SW, DEBOUNCE);
 boolean panic = true; //Hack for back button

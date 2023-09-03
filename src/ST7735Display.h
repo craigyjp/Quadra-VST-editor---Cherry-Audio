@@ -33,8 +33,8 @@ float currentFloatValue = 0.0;
 String currentPgmNum = "";
 String currentPatchName = "";
 String newPatchName = "";
-char * currentSettingsOption = "";
-char * currentSettingsValue = "";
+const char * currentSettingsOption = "";
+const char * currentSettingsValue = "";
 int currentSettingsPart = SETTINGS;
 int paramType = PARAMETER;
 
@@ -383,15 +383,13 @@ void showCurrentParameterPage(const char *param, String val)
   showCurrentParameterPage(param, val, PARAMETER);
 }
 
-
 void showPatchPage(String number, String patchName)
 {
   currentPgmNum = number;
   currentPatchName = patchName;
 }
 
-void showSettingsPage(char *  option, char * value, int settingsPart)
-{
+void showSettingsPage(const char *  option, const char * value, int settingsPart) {
   currentSettingsOption = option;
   currentSettingsValue = value;
   currentSettingsPart = settingsPart;

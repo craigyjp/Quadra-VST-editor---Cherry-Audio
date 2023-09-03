@@ -132,13 +132,13 @@ void setup() {
                //  Serial.println("USB HOST MIDI Class Compliant Listening");
 
   //USB Client MIDI
-  usbMIDI.setHandleControlChange(myControlChange);
+  usbMIDI.setHandleControlChange(myConvertControlChange);
   usbMIDI.setHandleProgramChange(myProgramChange);
   Serial.println("USB Client MIDI Listening");
 
   //MIDI 5 Pin DIN
   MIDI.begin();
-  MIDI.setHandleControlChange(myControlChange);
+  MIDI.setHandleControlChange(myConvertControlChange);
   MIDI.setHandleProgramChange(myProgramChange);
   Serial.println("MIDI In DIN Listening");
 
@@ -148,6 +148,11 @@ void setup() {
   midiOutCh = getMIDIOutCh();
 
   recallPatch(patchNo);  //Load first patch
+}
+
+void myConvertControlChange(byte channel, byte number, byte value) {
+  int newvalue = value << 5;
+  myControlChange(channel, number, newvalue);
 }
 
 void myPitchBend(byte channel, int bend) {
@@ -3331,6 +3336,10 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
   }
 }
 
+void showSettingsPage() {
+  showSettingsPage(settings::current_setting(), settings::current_setting_value(), state);
+}
+
 void midiCCOut(byte cc, byte value) {
   if (midiOutCh > 0) {
     switch (ccType) {
@@ -3563,34 +3572,24 @@ void checkSwitches() {
   }
 
   settingsButton.update();
-  if (settingsButton.read() == LOW && settingsButton.duration() > HOLD_DURATION) {
+  if (settingsButton.held()) {
     //If recall held, set current patch to match current hardware state
     //Reinitialise all hardware values to force them to be re-read if different
     state = REINITIALISE;
     reinitialiseToPanel();
-    settingsButton.write(HIGH);              //Come out of this state
-    reini = true;                            //Hack
-  } else if (settingsButton.risingEdge()) {  //cannot be fallingEdge because holding button won't work
-    if (!reini) {
-      switch (state) {
-        case PARAMETER:
-          settingsValueIndex = getCurrentIndex(settingsOptions.first().currentIndex);
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
-          state = SETTINGS;
-          break;
-        case SETTINGS:
-          settingsOptions.push(settingsOptions.shift());
-          settingsValueIndex = getCurrentIndex(settingsOptions.first().currentIndex);
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
-        case SETTINGSVALUE:
-          //Same as pushing Recall - store current settings item and go back to options
-          settingsHandler(settingsOptions.first().value[settingsValueIndex], settingsOptions.first().handler);
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
-          state = SETTINGS;
-          break;
-      }
-    } else {
-      reini = false;
+  } else if (settingsButton.numClicks() == 1) {
+    switch (state) {
+      case PARAMETER:
+        state = SETTINGS;
+        showSettingsPage();
+        break;
+      case SETTINGS:
+        showSettingsPage();
+      case SETTINGSVALUE:
+        settings::save_current_value();
+        state = SETTINGS;
+        showSettingsPage();
+        break;
     }
   }
 
@@ -3626,9 +3625,8 @@ void checkSwitches() {
           state = PARAMETER;
           break;
         case SETTINGSVALUE:
-          settingsValueIndex = getCurrentIndex(settingsOptions.first().currentIndex);
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
           state = SETTINGS;
+          showSettingsPage();
           break;
       }
     } else {
@@ -3690,16 +3688,13 @@ void checkSwitches() {
           state = PARAMETER;
           break;
         case SETTINGS:
-          //Choose this option and allow value choice
-          settingsValueIndex = getCurrentIndex(settingsOptions.first().currentIndex);
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGSVALUE);
           state = SETTINGSVALUE;
+          showSettingsPage();
           break;
         case SETTINGSVALUE:
-          //Store current settings item and go back to options
-          settingsHandler(settingsOptions.first().value[settingsValueIndex], settingsOptions.first().handler);
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
+          settings::save_current_value();
           state = SETTINGS;
+          showSettingsPage();
           break;
       }
     } else {
@@ -3753,13 +3748,12 @@ void checkEncoder() {
         patches.push(patches.shift());
         break;
       case SETTINGS:
-        settingsOptions.push(settingsOptions.shift());
-        settingsValueIndex = getCurrentIndex(settingsOptions.first().currentIndex);
-        showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
+        settings::increment_setting();
+        showSettingsPage();
         break;
       case SETTINGSVALUE:
-        if (settingsOptions.first().value[settingsValueIndex + 1] != '\0')
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[++settingsValueIndex], SETTINGSVALUE);
+        settings::increment_setting_value();
+        showSettingsPage();
         break;
     }
     encPrevious = encRead;
@@ -3788,13 +3782,12 @@ void checkEncoder() {
         patches.unshift(patches.pop());
         break;
       case SETTINGS:
-        settingsOptions.unshift(settingsOptions.pop());
-        settingsValueIndex = getCurrentIndex(settingsOptions.first().currentIndex);
-        showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[settingsValueIndex], SETTINGS);
+        settings::decrement_setting();
+        showSettingsPage();
         break;
       case SETTINGSVALUE:
-        if (settingsValueIndex > 0)
-          showSettingsPage(settingsOptions.first().option, settingsOptions.first().value[--settingsValueIndex], SETTINGSVALUE);
+        settings::decrement_setting_value();
+        showSettingsPage();
         break;
     }
     encPrevious = encRead;
