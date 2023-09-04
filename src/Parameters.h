@@ -3,6 +3,7 @@ byte midiChannel = MIDI_CHANNEL_OMNI;//(EEPROM)
 byte midiOutCh = 1;//(EEPROM)
 int readresdivider = 32;
 int resolutionFrig = 5;
+boolean recallPatchFlag = true;
 
 int CC_ON = 127;
 int CC_OFF = 127;

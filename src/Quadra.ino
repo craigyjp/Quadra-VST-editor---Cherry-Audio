@@ -36,6 +36,7 @@
 #include "HWControls.h"
 #include "EepromMgr.h"
 #include <RoxMux.h>
+#include <LedControl.h>
 
 
 #define PARAMETER 0      //The main page for displaying the current patch and control (parameter) changes
@@ -83,8 +84,11 @@ Rox74HC595<SR_TOTAL> sr;
 #define LED_PWM -1    // pin 13 on 74HC595
 
 byte ccType = 0;  //(EEPROM)
+byte updateParams = 0;  //(EEPROM)
+
 #include "Settings.h"
 
+LedControl ledpanel=LedControl(6,7,8,1);
 
 int count = 0;  //For MIDI Clk Sync
 int DelayForSH3 = 12;
@@ -101,6 +105,11 @@ void setup() {
   setUpSettings();
   setupHardware();
 
+  ledpanel.shutdown(0,false);
+  /* Set the brightness to a medium values */
+  ledpanel.setIntensity(0,15);
+  /* and clear the display */
+  ledpanel.clearDisplay(0);
 
   cardStatus = SD.begin(BUILTIN_SDCARD);
   if (cardStatus) {
@@ -124,6 +133,9 @@ void setup() {
 
   //Read CC type from EEPROM
   ccType = getCCType();
+
+  //Read UpdateParams type from EEPROM
+  updateParams = getUpdateParams();
 
   //USB HOST MIDI Class Compliant
   delay(400);  //Wait to turn on USB Host
@@ -153,6 +165,14 @@ void setup() {
 void myConvertControlChange(byte channel, byte number, byte value) {
   int newvalue = value << 5;
   myControlChange(channel, number, newvalue);
+}
+
+void single() {
+  for(int row=0;row<8;row++) {
+    for(int col=0;col<8;col++) {
+      ledpanel.setLed(0,row,col,true);
+    }
+  }
 }
 
 void myPitchBend(byte channel, int bend) {
@@ -2373,6 +2393,7 @@ void myProgramChange(byte channel, byte program) {
 
 void recallPatch(int patchNo) {
   allNotesOff();
+  recallPatchFlag = true;
   File patchFile = SD.open(String(patchNo).c_str());
   if (!patchFile) {
     Serial.println("File not found");
@@ -2382,6 +2403,7 @@ void recallPatch(int patchNo) {
     setCurrentPatchData(data);
     patchFile.close();
   }
+  recallPatchFlag = false;
 }
 
 void setCurrentPatchData(String data[]) {
@@ -3777,6 +3799,7 @@ void checkEncoder() {
 }
 
 void loop() {
+  single();
   checkMux();
   checkSwitches();
   checkEncoder();

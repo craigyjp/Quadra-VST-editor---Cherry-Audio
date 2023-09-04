@@ -5,6 +5,7 @@
 #define EEPROM_LAST_PATCH 2
 #define EEPROM_MIDI_OUT_CH 3
 #define EEPROM_CC_TYPE 4
+#define EEPROM_UPDATE_PARAMS 5
 
 int getMIDIChannel() {
   byte midiChannel = EEPROM.read(EEPROM_MIDI_CH);
@@ -26,6 +27,17 @@ boolean getEncoderDir() {
 void storeEncoderDir(byte encoderDir)
 {
   EEPROM.update(EEPROM_ENCODER_DIR, encoderDir);
+}
+
+boolean getUpdateParams() {
+  byte params = EEPROM.read(EEPROM_UPDATE_PARAMS); 
+  if (params < 0 || params > 1)return true; //If EEPROM has no encoder direction stored
+  return params == 1 ? true : false;
+}
+
+void storeUpdateParams(byte updateParameters)
+{
+  EEPROM.update(EEPROM_UPDATE_PARAMS, updateParameters);
 }
 
 int getLastPatch() {
