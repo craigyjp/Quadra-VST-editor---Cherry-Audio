@@ -83,12 +83,12 @@ Rox74HC595<SR_TOTAL> sr;
 #define LED_CLK 22    // pin 11 on 74HC595 (CLK)
 #define LED_PWM -1    // pin 13 on 74HC595
 
-byte ccType = 0;  //(EEPROM)
+byte ccType = 0;        //(EEPROM)
 byte updateParams = 0;  //(EEPROM)
 
 #include "Settings.h"
 
-LedControl ledpanel=LedControl(6,7,8,1);
+LedControl ledpanel = LedControl(6, 7, 8, 1);
 
 int count = 0;  //For MIDI Clk Sync
 int DelayForSH3 = 12;
@@ -105,9 +105,9 @@ void setup() {
   setUpSettings();
   setupHardware();
 
-  ledpanel.shutdown(0,false);
+  ledpanel.shutdown(0, false);
   /* Set the brightness to a medium values */
-  ledpanel.setIntensity(0,15);
+  ledpanel.setIntensity(0, 15);
   /* and clear the display */
   ledpanel.clearDisplay(0);
 
@@ -168,9 +168,9 @@ void myConvertControlChange(byte channel, byte number, byte value) {
 }
 
 void single() {
-  for(int row=0;row<8;row++) {
-    for(int col=0;col<8;col++) {
-      ledpanel.setLed(0,row,col,true);
+  for (int row = 0; row < 8; row++) {
+    for (int col = 0; col < 8; col++) {
+      ledpanel.setLed(0, row, col, true);
     }
   }
 }
@@ -703,38 +703,44 @@ void updateleadVCFmod() {
 }
 
 void updateleadNPlow() {
-  if (leadNPlow == 1) {
-    showCurrentParameterPage("Note Priority", "Low");
-    sr.writePin(LEAD_NP_LOW_LED, HIGH);
-    sr.writePin(LEAD_NP_HIGH_LED, LOW);
-    sr.writePin(LEAD_NP_LAST_LED, LOW);
-    leadNPhigh = 0;
-    leadNPlast = 0;
-    midiCCOut(CCleadNPlow, CC_ON);
+  if (!lead2ndVoice) {
+    if (leadNPlow == 1) {
+      showCurrentParameterPage("Note Priority", "Low");
+      sr.writePin(LEAD_NP_LOW_LED, HIGH);
+      sr.writePin(LEAD_NP_HIGH_LED, LOW);
+      sr.writePin(LEAD_NP_LAST_LED, LOW);
+      leadNPhigh = 0;
+      leadNPlast = 0;
+      midiCCOut(CCleadNPlow, CC_ON);
+    }
   }
 }
 
 void updateleadNPhigh() {
-  if (leadNPhigh == 1) {
-    showCurrentParameterPage("Note Priority", "High");
-    sr.writePin(LEAD_NP_HIGH_LED, HIGH);
-    sr.writePin(LEAD_NP_LOW_LED, LOW);
-    sr.writePin(LEAD_NP_LAST_LED, LOW);
-    leadNPlow = 0;
-    leadNPlast = 0;
-    midiCCOut(CCleadNPhigh, CC_ON);
+  if (!lead2ndVoice) {
+    if (leadNPhigh == 1) {
+      showCurrentParameterPage("Note Priority", "High");
+      sr.writePin(LEAD_NP_HIGH_LED, HIGH);
+      sr.writePin(LEAD_NP_LOW_LED, LOW);
+      sr.writePin(LEAD_NP_LAST_LED, LOW);
+      leadNPlow = 0;
+      leadNPlast = 0;
+      midiCCOut(CCleadNPhigh, CC_ON);
+    }
   }
 }
 
 void updateleadNPlast() {
-  if (leadNPlast == 1) {
-    showCurrentParameterPage("Note Priority", "Last");
-    sr.writePin(LEAD_NP_HIGH_LED, LOW);
-    sr.writePin(LEAD_NP_LOW_LED, LOW);
-    sr.writePin(LEAD_NP_LAST_LED, HIGH);
-    leadNPlow = 0;
-    leadNPhigh = 0;
-    midiCCOut(CCleadNPlast, CC_ON);
+  if (!lead2ndVoice) {
+    if (leadNPlast == 1) {
+      showCurrentParameterPage("Note Priority", "Last");
+      sr.writePin(LEAD_NP_HIGH_LED, LOW);
+      sr.writePin(LEAD_NP_LOW_LED, LOW);
+      sr.writePin(LEAD_NP_LAST_LED, HIGH);
+      leadNPlow = 0;
+      leadNPhigh = 0;
+      midiCCOut(CCleadNPlast, CC_ON);
+    }
   }
 }
 
@@ -770,13 +776,25 @@ void updateVCO2KBDTrk() {
 
 void updatelead2ndVoice() {
   if (lead2ndVoice == 1) {
-    showCurrentParameterPage("2 Voice", "On");
+    showCurrentParameterPage("2nd Voice", "On");
     sr.writePin(LEAD_SECOND_VOICE_LED, HIGH);  // LED on
+    sr.writePin(LEAD_NP_HIGH_LED, LOW);        // LED on
+    sr.writePin(LEAD_NP_LOW_LED, LOW);          // LED on
+    sr.writePin(LEAD_NP_LAST_LED, LOW);        // LED on
     midiCCOut(CClead2ndVoice, 127);
     midiCCOut(CClead2ndVoice, 0);
+    prevleadNPlow = leadNPlow;
+    prevleadNPhigh = leadNPhigh;
+    prevleadNPlast = leadNPlast;
   } else {
-    showCurrentParameterPage("2 Voice", "Off");
+    showCurrentParameterPage("2nd Voice", "Off");
     sr.writePin(LEAD_SECOND_VOICE_LED, LOW);  // LED off
+    leadNPlow = prevleadNPlow;
+    leadNPhigh = prevleadNPhigh;
+    leadNPlast = prevleadNPlast;
+    updateleadNPlow();
+    updateleadNPhigh();
+    updateleadNPlast();
     midiCCOut(CClead2ndVoice, 127);
     midiCCOut(CClead2ndVoice, 0);
   }
@@ -3544,7 +3562,7 @@ void midiCCOut(byte cc, byte value) {
 
 void checkSwitches() {
 
-saveButton.update();
+  saveButton.update();
   if (saveButton.held()) {
     switch (state) {
       case PARAMETER:
@@ -3633,13 +3651,13 @@ saveButton.update();
         setPatchesOrdering(patchNo);
         state = PARAMETER;
         break;
-        case SETTINGS:
-          state = PARAMETER;
-          break;
-        case SETTINGSVALUE:
-          state = SETTINGS;
-          showSettingsPage();
-          break;
+      case SETTINGS:
+        state = PARAMETER;
+        break;
+      case SETTINGSVALUE:
+        state = SETTINGS;
+        showSettingsPage();
+        break;
     }
   }
 
@@ -3694,15 +3712,15 @@ saveButton.update();
         }
         state = PARAMETER;
         break;
-        case SETTINGS:
-          state = SETTINGSVALUE;
-          showSettingsPage();
-          break;
-        case SETTINGSVALUE:
-          settings::save_current_value();
-          state = SETTINGS;
-          showSettingsPage();
-          break;
+      case SETTINGS:
+        state = SETTINGSVALUE;
+        showSettingsPage();
+        break;
+      case SETTINGSVALUE:
+        settings::save_current_value();
+        state = SETTINGS;
+        showSettingsPage();
+        break;
     }
   }
 }
