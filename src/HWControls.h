@@ -9,17 +9,27 @@
 
 ADC *adc = new ADC();
 
-//Teensy 3.6 - Mux Pins
+#define LED_MUX_0 38
+#define LED_MUX_1 39
+#define LED_MUX_2 40
+
+#define SEGMENT_CLK 36
+#define SEGMENT_DIO 37
+
+#define TRILL_CLK 20
+#define TRILL_DIO 19
+
+//Teensy 4.1 - Mux Pins
 #define MUX_0 28
 #define MUX_1 32
 #define MUX_2 30
 #define MUX_3 31
 
-#define MUX1_S A2 // ADC1
-#define MUX2_S A0 // ADC1
-#define MUX3_S A1 // ADC1
-#define MUX4_S A11 // ADC0
-#define MUX5_S A10 // ADC0
+#define MUX1_S A2   // ADC1
+#define MUX2_S A0   // ADC1
+#define MUX3_S A1   // ADC1
+#define MUX4_S A11  // ADC0
+#define MUX5_S A10  // ADC0
 
 
 //Mux 1 Connections
@@ -299,26 +309,25 @@ static long encPrevious = 0;
 
 //These are pushbuttons and require debouncing
 
-TButton saveButton{SAVE_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton settingsButton{SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton backButton{BACK_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION};
-TButton recallButton{RECALL_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION}; //On encoder
+TButton saveButton{ SAVE_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
+TButton settingsButton{ SETTINGS_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
+TButton backButton{ BACK_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };
+TButton recallButton{ RECALL_SW, LOW, HOLD_DURATION, DEBOUNCE, CLICK_DURATION };  //On encoder
 
-Encoder encoder(ENCODER_PINB, ENCODER_PINA);//This often needs the pins swapping depending on the encoder
+Encoder encoder(ENCODER_PINB, ENCODER_PINA);  //This often needs the pins swapping depending on the encoder
 
-void setupHardware()
-{
+void setupHardware() {
   //Volume Pot is on ADC0
-  adc->adc0->setAveraging(32); // set number of averages 0, 4, 8, 16 or 32.
-  adc->adc0->setResolution(12); // set bits of resolution  8, 10, 12 or 16 bits.
-  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED); // change the conversion speed
-  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::MED_SPEED); // change the sampling speed
+  adc->adc0->setAveraging(32);                                          // set number of averages 0, 4, 8, 16 or 32.
+  adc->adc0->setResolution(12);                                         // set bits of resolution  8, 10, 12 or 16 bits.
+  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED);  // change the conversion speed
+  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::MED_SPEED);           // change the sampling speed
 
   //MUXs on ADC1
-  adc->adc1->setAveraging(32); // set number of averages 0, 4, 8, 16 or 32.
-  adc->adc1->setResolution(12); // set bits of resolution  8, 10, 12 or 16 bits.
-  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED); // change the conversion speed
-  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::MED_SPEED); // change the sampling speed
+  adc->adc1->setAveraging(32);                                          // set number of averages 0, 4, 8, 16 or 32.
+  adc->adc1->setResolution(12);                                         // set bits of resolution  8, 10, 12 or 16 bits.
+  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_LOW_SPEED);  // change the conversion speed
+  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::MED_SPEED);           // change the sampling speed
 
   //Mux address pins
 
@@ -332,7 +341,15 @@ void setupHardware()
   digitalWrite(MUX_2, LOW);
   digitalWrite(MUX_3, LOW);
 
-    //Mux ADC
+  pinMode(LED_MUX_0, OUTPUT);
+  pinMode(LED_MUX_1, OUTPUT);
+  pinMode(LED_MUX_2, OUTPUT);
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+
+  //Mux ADC
   pinMode(MUX1_S, INPUT_DISABLE);
   pinMode(MUX2_S, INPUT_DISABLE);
   pinMode(MUX3_S, INPUT_DISABLE);
@@ -340,9 +357,9 @@ void setupHardware()
   pinMode(MUX5_S, INPUT_DISABLE);
 
   //Switches
-  pinMode(RECALL_SW, INPUT_PULLUP); //On encoder
+  pinMode(RECALL_SW, INPUT_PULLUP);  //On encoder
   pinMode(SAVE_SW, INPUT_PULLUP);
   pinMode(SETTINGS_SW, INPUT_PULLUP);
   pinMode(BACK_SW, INPUT_PULLUP);
-
 }
+

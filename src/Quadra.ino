@@ -37,7 +37,8 @@
 #include "EepromMgr.h"
 #include <RoxMux.h>
 #include <LedControl.h>
-
+#include <SevenSegmentTM1637.h>
+#include <SevenSegmentExtended.h>
 
 #define PARAMETER 0      //The main page for displaying the current patch and control (parameter) changes
 #define RECALL 1         //Patches list
@@ -96,6 +97,17 @@ int patchNo = 1;               //Current patch no
 int voiceToReturn = -1;        //Initialise
 long earliestTime = millis();  //For voice allocation - initialise to now
 
+// LED displays
+SevenSegmentExtended    trilldisplay(TRILL_CLK, TRILL_DIO);
+SevenSegmentExtended    display0(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display1(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display2(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display3(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display4(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display5(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display6(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended    display7(SEGMENT_CLK, SEGMENT_DIO);
+
 void setup() {
   SPI.begin();
   octoswitch.begin(PIN_DATA, PIN_LOAD, PIN_CLK);
@@ -104,6 +116,35 @@ void setup() {
   setupDisplay();
   setUpSettings();
   setupHardware();
+  //setUpLEDS();
+
+  trilldisplay.begin();            // initializes the display
+  trilldisplay.setBacklight(100);  // set the brightness to 100 %
+  trilldisplay.print("   0");      // display INIT on the display
+  delay(10); 
+  
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display0.begin();            // initializes the display
+  display0.setBacklight(100);  // set the brightness to 100 %
+  display0.print(" 127");      // display INIT on the display
+  delay(10);                // wait 1000 ms
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display1.begin();            // initializes the display
+  display1.setBacklight(100);  // set the brightness to 100 %
+  display1.print("   0");      // display INIT on the display
+  delay(10);    
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+
 
   ledpanel.shutdown(0, false);
   /* Set the brightness to a medium values */
@@ -3490,33 +3531,33 @@ void midiCCOut(byte cc, byte value) {
             case 148:
               // Arp Down
               usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
-              usbMIDI.sendNoteOff(126, 0, midiOutCh);   //MIDI USB is set to Out
+              //usbMIDI.sendNoteOff(126, 0, midiOutCh);   //MIDI USB is set to Out
               MIDI.sendNoteOn(126, 127, midiOutCh);     //MIDI DIN is set to Out
-              MIDI.sendNoteOff(126, 0, midiOutCh);      //MIDI USB is set to Out
+              //MIDI.sendNoteOff(126, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
             case 149:
               // Arp Up
               usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
-              usbMIDI.sendNoteOff(125, 0, midiOutCh);   //MIDI USB is set to Out
+              //usbMIDI.sendNoteOff(125, 0, midiOutCh);   //MIDI USB is set to Out
               MIDI.sendNoteOn(125, 127, midiOutCh);     //MIDI DIN is set to Out
-              MIDI.sendNoteOff(125, 0, midiOutCh);      //MIDI USB is set to Out
+              //MIDI.sendNoteOff(125, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
             case 150:
               // Arp UpDown
               usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
-              usbMIDI.sendNoteOff(124, 0, midiOutCh);   //MIDI USB is set to Out
+              //usbMIDI.sendNoteOff(124, 0, midiOutCh);   //MIDI USB is set to Out
               MIDI.sendNoteOn(124, 127, midiOutCh);     //MIDI DIN is set to Out
-              MIDI.sendNoteOff(124, 0, midiOutCh);      //MIDI USB is set to Out
+              //MIDI.sendNoteOff(124, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
             case 151:
               // Arp Random
               usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
-              usbMIDI.sendNoteOff(123, 0, midiOutCh);   //MIDI USB is set to Out
+              //usbMIDI.sendNoteOff(123, 0, midiOutCh);   //MIDI USB is set to Out
               MIDI.sendNoteOn(123, 127, midiOutCh);     //MIDI DIN is set to Out
-              MIDI.sendNoteOff(123, 0, midiOutCh);      //MIDI USB is set to Out
+              //MIDI.sendNoteOff(123, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
             case 152:
