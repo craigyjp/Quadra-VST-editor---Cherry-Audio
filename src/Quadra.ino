@@ -119,7 +119,7 @@ void setup() {
   //setUpLEDS();
 
   trilldisplay.begin();            // initializes the display
-  trilldisplay.setBacklight(100);  // set the brightness to 100 %
+  trilldisplay.setBacklight(50);  // set the brightness to 100 %
   trilldisplay.print("   0");      // display INIT on the display
   delay(10); 
   
@@ -128,7 +128,7 @@ void setup() {
   digitalWrite(LED_MUX_2, LOW);
 
   display0.begin();            // initializes the display
-  display0.setBacklight(100);  // set the brightness to 100 %
+  display0.setBacklight(50);  // set the brightness to 100 %
   display0.print(" 127");      // display INIT on the display
   delay(10);                // wait 1000 ms
 
@@ -137,9 +137,63 @@ void setup() {
   digitalWrite(LED_MUX_2, LOW);
 
   display1.begin();            // initializes the display
-  display1.setBacklight(100);  // set the brightness to 100 %
+  display1.setBacklight(50);  // set the brightness to 100 %
   display1.print("   0");      // display INIT on the display
   delay(10);    
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display2.begin();            // initializes the display
+  display2.setBacklight(50);  // set the brightness to 100 %
+  display2.print(" 127");      // display INIT on the display
+  delay(10);  
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display3.begin();            // initializes the display
+  display3.setBacklight(50);  // set the brightness to 100 %
+  display3.print("   0");      // display INIT on the display
+  delay(10);  
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display4.begin();            // initializes the display
+  display4.setBacklight(50);  // set the brightness to 100 %
+  display4.print(" 127");      // display INIT on the display
+  delay(10);  
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display5.begin();            // initializes the display
+  display5.setBacklight(50);  // set the brightness to 100 %
+  display5.print("   0");      // display INIT on the display
+  delay(10);  
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display6.begin();            // initializes the display
+  display6.setBacklight(50);  // set the brightness to 100 %
+  display6.print(" 127");      // display INIT on the display
+  delay(10);  
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display7.begin();            // initializes the display
+  display7.setBacklight(50);  // set the brightness to 100 %
+  display7.print("   0");      // display INIT on the display
+  delay(10);  
 
   digitalWrite(LED_MUX_0, LOW);
   digitalWrite(LED_MUX_1, LOW);
@@ -1586,8 +1640,97 @@ void updatearpHoldSW() {
     midiCCOut(CCarpHoldSW, 0);
   }
 }
+
+void updateleadLearn() {
+  setLEDDisplay1();
+  if (leadLearn == 1) {
+    showCurrentParameterPage("Lead Learn", "On");
+    displayLEDNumber( 1, leadBottomNote);
+    display1.blink(232);
+    midiCCOut(CCleadLearn, 127);
+  } else {
+    showCurrentParameterPage("Lead Learn", "Off");
+    display1.clear();
+    displayLEDNumber( 1, leadBottomNote);
+    midiCCOut(CCleadLearn, 0);
+  }
+}
+
 void updatePatchname() {
   showPatchPage(String(patchNo), patchName);
+}
+
+void displayLEDNumber(int displayNumber, int value) {
+  if (value <= 9) {
+    setCursorPos = 3;
+  }
+  if (value > 9 && value <= 99 ) {
+    setCursorPos = 2;
+  }
+  if (value > 99 && value <= 999 ) {
+    setCursorPos = 1;
+  }
+  switch (displayNumber) {
+    case 0:
+       setLEDDisplay0();
+       display0.setCursor(0, setCursorPos);
+       display0.print(value);
+       break;
+
+  case 1:
+       setLEDDisplay1();
+       display1.setCursor(0, setCursorPos);
+       display1.print(value);
+       break;
+  }
+}
+
+void setLEDDisplay0() {
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+}
+
+void setLEDDisplay1() {
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+}
+
+void setLEDDisplay2() {
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, LOW);
+}
+
+void setLEDDisplay3() {
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, LOW);
+}
+
+void setLEDDisplay4() {
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, HIGH);
+}
+
+void setLEDDisplay5() {
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, HIGH);
+}
+
+void setLEDDisplay6() {
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, HIGH);
+}
+
+void setLEDDisplay7() {
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, HIGH);
 }
 
 void myControlChange(byte channel, byte control, int value) {
@@ -2122,7 +2265,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCleadLearn:
       value > 0 ? leadLearn = 1 : leadLearn = 0;
-      //updateleadVCFmod();
+      updateleadLearn();
       break;
 
     case CCleadNPhigh:
@@ -3428,6 +3571,13 @@ void midiCCOut(byte cc, byte value) {
         {
           Serial.println(cc);
           switch (cc) {
+
+            case 131: // LEad learn
+              usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
+              usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
+              MIDI.sendNoteOn(121, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOff(121, 0, midiOutCh);      //MIDI USB is set to Out
+              break;
 
             case 134:
               usbMIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI USB is set to Out

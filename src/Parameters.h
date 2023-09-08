@@ -4,6 +4,7 @@ byte midiOutCh = 1;//(EEPROM)
 int readresdivider = 32;
 int resolutionFrig = 5;
 boolean recallPatchFlag = true;
+int setCursorPos = 0;
 
 int CC_ON = 127;
 int CC_OFF = 127;
@@ -297,6 +298,8 @@ int polyLearn = 0;
 int trillUp = 0;
 int trillDown= 0;
 int leadLearn = 0;
+int leadTopNote = 127;
+int leadBottomNote = 0;
 int leadNPlow = 0;
 int leadNPhigh = 0;
 int leadNPlast = 0;
