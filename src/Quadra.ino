@@ -910,12 +910,17 @@ void updatelead2ndVoice() {
   } else {
     showCurrentParameterPage("2nd Voice", "Off");
     sr.writePin(LEAD_SECOND_VOICE_LED, LOW);  // LED off
-    leadNPlow = prevleadNPlow;
-    leadNPhigh = prevleadNPhigh;
-    leadNPlast = prevleadNPlast;
-    updateleadNPlow();
-    updateleadNPhigh();
-    updateleadNPlast();
+    if ( !recallPatchFlag ) {
+
+      leadNPlow = prevleadNPlow;
+      leadNPhigh = prevleadNPhigh;
+      leadNPlast = prevleadNPlast;
+   
+      updateleadNPlow();
+      updateleadNPhigh();
+      updateleadNPlast();
+
+    }
     midiCCOut(CClead2ndVoice, 127);
     midiCCOut(CClead2ndVoice, 0);
   }
