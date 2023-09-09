@@ -4,12 +4,16 @@ void settingsMIDICh();
 void settingsMIDIOutCh();
 void settingsEncoderDir();
 void settingsUpdateParams();
+void settingsLEDintensity();
+void settingsSLIDERintensity();
 void settingsCCType();
 
 int currentIndexMIDICh();
 int currentIndexMIDIOutCh();
 int currentIndexEncoderDir();
 int currentIndexUpdateParams();
+int currentIndexLEDintensity();
+int currentIndexSLIDERintensity();
 int currentIndexCCType();
 
 void settingsMIDICh(int index, const char *value) {
@@ -28,6 +32,24 @@ void settingsMIDIOutCh(int index, const char *value) {
     midiOutCh = atoi(value);
   }
   storeMidiOutCh(midiOutCh);
+}
+
+void settingsLEDintensity(int index, const char *value) {
+  if (strcmp(value, "Off") == 0) {
+    LEDintensity = 0;
+  } else {
+    LEDintensity = atoi(value);
+  }
+  storeLEDintensity(LEDintensity);
+}
+
+void settingsSLIDERintensity(int index, const char *value) {
+  if (strcmp(value, "Off") == 0) {
+    SLIDERintensity = 0;
+  } else {
+    SLIDERintensity = 1;
+  }
+  storeSLIDERintensity(SLIDERintensity);
 }
 
 void settingsEncoderDir(int index, const char *value) {
@@ -71,6 +93,14 @@ int currentIndexMIDIOutCh() {
   return getMIDIOutCh();
 }
 
+int currentIndexLEDintensity() {
+  return getLEDintensity();
+}
+
+int currentIndexSLIDERintensity() {
+  return getSLIDERintensity();
+}
+
 int currentIndexEncoderDir() {
   return getEncoderDir() ? 0 : 1;
 }
@@ -89,5 +119,7 @@ void setUpSettings() {
   settings::append(settings::SettingsOption{"MIDI Out Ch.", {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "\0"}, settingsMIDIOutCh, currentIndexMIDIOutCh});
   settings::append(settings::SettingsOption{"Encoder", {"Type 1", "Type 2", "\0"}, settingsEncoderDir, currentIndexEncoderDir});
   settings::append(settings::SettingsOption{"MIDI Params", {"Off", "Send Params", "\0"}, settingsUpdateParams, currentIndexUpdateParams});
+  settings::append(settings::SettingsOption{"LED Int.", {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "\0"}, settingsLEDintensity, currentIndexLEDintensity});
+  settings::append(settings::SettingsOption{"SLIDER LED", {"Off", "On", "\0"}, settingsSLIDERintensity, currentIndexSLIDERintensity});
   settings::append(settings::SettingsOption{"Control Type", {"CC", "NRPN", "SYSEX", "\0"}, settingsCCType, currentIndexCCType});
 }

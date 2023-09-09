@@ -1,6 +1,15 @@
 //Values below are just for initialising and will be changed when synth is initialised to current panel controls & EEPROM settings
 byte midiChannel = MIDI_CHANNEL_OMNI;//(EEPROM)
 byte midiOutCh = 1;//(EEPROM)
+byte LEDintensity = 10;//(EEPROM)
+byte oldLEDintensity;
+int SLIDERintensity = 1;//(EEPROM)
+int oldSLIDERintensity;
+
+static unsigned long polywave_timer = 0;
+static unsigned long vco1wave_timer = 0;
+static unsigned long vco2wave_timer = 0;
+
 int readresdivider = 32;
 int resolutionFrig = 5;
 boolean recallPatchFlag = true;

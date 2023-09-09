@@ -277,7 +277,15 @@ ADC *adc = new ADC();
 #define ARP_HOLD_LED 69
 #define LEAD_TOUCH_DEST_RED_LED 70
 #define LEAD_TOUCH_DEST_GREEN_LED 71
-//Teensy 3.6 Pins
+
+#define ARP_SYNC_LED 72
+#define ECHO_SYNC_LED 73
+#define LFO_SYNC_LED 74
+#define LFO_DELAY_LED 75
+#define MOD_WHEEL_LED 76
+
+
+//Teensy 4.1 Pins
 
 #define RECALL_SW 17
 #define SAVE_SW 41

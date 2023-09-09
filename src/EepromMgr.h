@@ -6,6 +6,8 @@
 #define EEPROM_MIDI_OUT_CH 3
 #define EEPROM_CC_TYPE 4
 #define EEPROM_UPDATE_PARAMS 5
+#define EEPROM_LED_INTENSITY 6
+#define EEPROM_SLIDER_INTENSITY 7
 
 int getMIDIChannel() {
   byte midiChannel = EEPROM.read(EEPROM_MIDI_CH);
@@ -59,6 +61,26 @@ int getMIDIOutCh() {
 
 void storeMidiOutCh(byte midiOutCh){
   EEPROM.update(EEPROM_MIDI_OUT_CH, midiOutCh);
+}
+
+int getLEDintensity() {
+  byte li = EEPROM.read(EEPROM_LED_INTENSITY);
+  if (li < 0 || li > 10) li = 10; //If EEPROM has no intesity stored
+  return li;
+}
+
+void storeLEDintensity(byte LEDintensity){
+  EEPROM.update(EEPROM_LED_INTENSITY, LEDintensity);
+}
+
+int getSLIDERintensity() {
+  int si = EEPROM.read(EEPROM_SLIDER_INTENSITY);
+  if (si < 0 || si > 1) si = 1; //If EEPROM has no intesity stored
+  return si;
+}
+
+void storeSLIDERintensity(int SLIDERintensity){
+  EEPROM.update(EEPROM_SLIDER_INTENSITY, SLIDERintensity);
 }
 
 int getCCType() {

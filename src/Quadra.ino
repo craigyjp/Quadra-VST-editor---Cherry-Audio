@@ -75,7 +75,7 @@ RoxOctoswitch<OCTO_TOTAL, BTN_DEBOUNCE> octoswitch;
 #define PIN_LOAD 34  // pin 1 on 74HC165 (LOAD)
 #define PIN_CLK 35   // pin 2 on 74HC165 (CLK))
 
-#define SR_TOTAL 9
+#define SR_TOTAL 10
 Rox74HC595<SR_TOTAL> sr;
 
 // pins for 74HC595
@@ -98,15 +98,15 @@ int voiceToReturn = -1;        //Initialise
 long earliestTime = millis();  //For voice allocation - initialise to now
 
 // LED displays
-SevenSegmentExtended    trilldisplay(TRILL_CLK, TRILL_DIO);
-SevenSegmentExtended    display0(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display1(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display2(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display3(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display4(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display5(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display6(SEGMENT_CLK, SEGMENT_DIO);
-SevenSegmentExtended    display7(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended trilldisplay(TRILL_CLK, TRILL_DIO);
+SevenSegmentExtended display0(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display1(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display2(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display3(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display4(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display5(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display6(SEGMENT_CLK, SEGMENT_DIO);
+SevenSegmentExtended display7(SEGMENT_CLK, SEGMENT_DIO);
 
 void setup() {
   SPI.begin();
@@ -118,93 +118,99 @@ void setup() {
   setupHardware();
   //setUpLEDS();
 
-  trilldisplay.begin();            // initializes the display
-  trilldisplay.setBacklight(50);  // set the brightness to 100 %
-  trilldisplay.print("   0");      // display INIT on the display
-  delay(10); 
-  
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-
-  display0.begin();            // initializes the display
-  display0.setBacklight(50);  // set the brightness to 100 %
-  display0.print(" 127");      // display INIT on the display
-  delay(10);                // wait 1000 ms
-
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-
-  display1.begin();            // initializes the display
-  display1.setBacklight(50);  // set the brightness to 100 %
-  display1.print("   0");      // display INIT on the display
-  delay(10);    
-
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, LOW);
-
-  display2.begin();            // initializes the display
-  display2.setBacklight(50);  // set the brightness to 100 %
-  display2.print(" 127");      // display INIT on the display
-  delay(10);  
-
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, LOW);
-
-  display3.begin();            // initializes the display
-  display3.setBacklight(50);  // set the brightness to 100 %
-  display3.print("   0");      // display INIT on the display
-  delay(10);  
-
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, HIGH);
-
-  display4.begin();            // initializes the display
-  display4.setBacklight(50);  // set the brightness to 100 %
-  display4.print(" 127");      // display INIT on the display
-  delay(10);  
-
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, HIGH);
-
-  display5.begin();            // initializes the display
-  display5.setBacklight(50);  // set the brightness to 100 %
-  display5.print("   0");      // display INIT on the display
-  delay(10);  
-
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, HIGH);
-
-  display6.begin();            // initializes the display
-  display6.setBacklight(50);  // set the brightness to 100 %
-  display6.print(" 127");      // display INIT on the display
-  delay(10);  
-
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, HIGH);
-
-  display7.begin();            // initializes the display
-  display7.setBacklight(50);  // set the brightness to 100 %
-  display7.print("   0");      // display INIT on the display
-  delay(10);  
-
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-
+  SLIDERintensity = getSLIDERintensity();
+  oldSLIDERintensity = SLIDERintensity;
 
   ledpanel.shutdown(0, false);
   /* Set the brightness to a medium values */
   ledpanel.setIntensity(0, 15);
   /* and clear the display */
   ledpanel.clearDisplay(0);
+
+  LEDintensity = getLEDintensity();
+  LEDintensity = LEDintensity * 10;
+  oldLEDintensity = LEDintensity;
+
+  trilldisplay.begin();                     // initializes the display
+  trilldisplay.setBacklight(LEDintensity);  // set the brightness to 100 %
+  trilldisplay.print("   0");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display0.begin();                     // initializes the display
+  display0.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display0.print(" 127");               // display INIT on the display
+  delay(10);                            // wait 1000 ms
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display1.begin();                     // initializes the display
+  display1.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display1.print("   0");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display2.begin();                     // initializes the display
+  display2.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display2.print(" 127");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, LOW);
+
+  display3.begin();                     // initializes the display
+  display3.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display3.print("   0");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display4.begin();                     // initializes the display
+  display4.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display4.print(" 127");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display5.begin();                     // initializes the display
+  display5.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display5.print("   0");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display6.begin();                     // initializes the display
+  display6.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display6.print(" 127");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, HIGH);
+  digitalWrite(LED_MUX_1, HIGH);
+  digitalWrite(LED_MUX_2, HIGH);
+
+  display7.begin();                     // initializes the display
+  display7.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display7.print("   0");               // display INIT on the display
+  delay(10);
+
+  digitalWrite(LED_MUX_0, LOW);
+  digitalWrite(LED_MUX_1, LOW);
+  digitalWrite(LED_MUX_2, LOW);
 
   cardStatus = SD.begin(BUILTIN_SDCARD);
   if (cardStatus) {
@@ -254,6 +260,10 @@ void setup() {
   //Read MIDI Out Channel from EEPROM
   midiOutCh = getMIDIOutCh();
 
+  sr.writePin(POLY_WAVE_LED, HIGH);
+  sr.writePin(LEAD_VCO1_WAVE_LED, HIGH);
+  sr.writePin(LEAD_VCO2_WAVE_LED, HIGH);
+
   recallPatch(patchNo);  //Load first patch
 }
 
@@ -265,7 +275,13 @@ void myConvertControlChange(byte channel, byte number, byte value) {
 void single() {
   for (int row = 0; row < 8; row++) {
     for (int col = 0; col < 8; col++) {
+      //ledpanel.setIntensity(0, 1);
+      if (SLIDERintensity == 1 ) {
       ledpanel.setLed(0, row, col, true);
+      } else {
+      ledpanel.setLed(0, row, col, false);
+      }
+
     }
   }
 }
@@ -284,9 +300,11 @@ void allNotesOff() {
 void updatemodWheel() {
   if (modWheel > 63) {
     showCurrentParameterPage("LFO Wheel", String("On"));
+    sr.writePin(MOD_WHEEL_LED, HIGH);
     midiCCOut(CCmodWheel, CC_ON);
   } else {
     showCurrentParameterPage("LFO Wheel", String("Off"));
+    sr.writePin(MOD_WHEEL_LED, LOW);
     midiCCOut(CCmodWheel, 0);
   }
 }
@@ -353,9 +371,11 @@ void updatechorusSpeed() {
 void updatelfoDelay() {
   if (lfoDelay > 63) {
     showCurrentParameterPage("LFO Delay", String("On"));
+    sr.writePin(LFO_DELAY_LED, HIGH);
     midiCCOut(CClfoDelay, CC_ON);
   } else {
     showCurrentParameterPage("LFO Delay", String("Off"));
+    sr.writePin(LFO_DELAY_LED, LOW);
     midiCCOut(CClfoDelay, 0);
   }
 }
@@ -392,9 +412,11 @@ void updatepolyPW() {
 void updateechoSync() {
   if (echoSync > 63) {
     showCurrentParameterPage("Echo Sync", String("On"));
+    sr.writePin(ECHO_SYNC_LED, HIGH);
     midiCCOut(CCechoSync, CC_ON);
   } else {
     showCurrentParameterPage("Echo Sync", String("Off"));
+    sr.writePin(ECHO_SYNC_LED, LOW);
     midiCCOut(CCechoSync, 0);
   }
 }
@@ -402,9 +424,11 @@ void updateechoSync() {
 void updatelfoSync() {
   if (lfoSync > 63) {
     showCurrentParameterPage("LFO Sync", String("On"));
+    sr.writePin(LFO_SYNC_LED, HIGH);
     midiCCOut(CClfoSync, CC_ON);
   } else {
     showCurrentParameterPage("LFO Sync", String("Off"));
+    sr.writePin(LFO_SYNC_LED, LOW);
     midiCCOut(CClfoSync, 0);
   }
 }
@@ -623,9 +647,11 @@ void updatereverbLevel() {
 void updatearpSync() {
   if (arpSync > 63) {
     showCurrentParameterPage("Arp Sync", String("On"));
+    sr.writePin(ARP_SYNC_LED, HIGH);
     midiCCOut(CCarpSync, CC_ON);
   } else {
     showCurrentParameterPage("Arp Sync", String("Off"));
+    sr.writePin(ARP_SYNC_LED, LOW);
     midiCCOut(CCarpSync, 0);
   }
 }
@@ -874,7 +900,7 @@ void updatelead2ndVoice() {
     showCurrentParameterPage("2nd Voice", "On");
     sr.writePin(LEAD_SECOND_VOICE_LED, HIGH);  // LED on
     sr.writePin(LEAD_NP_HIGH_LED, LOW);        // LED on
-    sr.writePin(LEAD_NP_LOW_LED, LOW);          // LED on
+    sr.writePin(LEAD_NP_LOW_LED, LOW);         // LED on
     sr.writePin(LEAD_NP_LAST_LED, LOW);        // LED on
     midiCCOut(CClead2ndVoice, 127);
     midiCCOut(CClead2ndVoice, 0);
@@ -910,44 +936,139 @@ void updateleadTrill() {
 }
 
 void updateleadVCO1wave() {
-  if (leadVCO1wave == 1) {
+  switch (leadVCO1wave) {
+  case 1:
     showCurrentParameterPage("VCO1 Wave", "Square");
-    sr.writePin(LEAD_VCO1_WAVE_LED, HIGH);  // LED on
+    midiCCOut(CCleadVCO1wave, 127);
+    midiCCOut(CCleadVCO1wave, 0); 
+    break;
+
+  case 2:
+    showCurrentParameterPage("VCO1 Wave", "Sine");
     midiCCOut(CCleadVCO1wave, 127);
     midiCCOut(CCleadVCO1wave, 0);
-  } else {
-    showCurrentParameterPage("VCO1 Wave", "Saw");
-    sr.writePin(LEAD_VCO1_WAVE_LED, LOW);  // LED off
+    break;
+
+  case 3:
+    showCurrentParameterPage("VCO1 Wave", "Triangle");
     midiCCOut(CCleadVCO1wave, 127);
     midiCCOut(CCleadVCO1wave, 0);
+    break;
+
+  case 4:
+    showCurrentParameterPage("VCO1 Wave", "Noise");
+    midiCCOut(CCleadVCO1wave, 127);
+    midiCCOut(CCleadVCO1wave, 0);
+    break;
+
+  case 5:
+    showCurrentParameterPage("VCO1 Wave", "Saw Up");
+    midiCCOut(CCleadVCO1wave, 127);
+    midiCCOut(CCleadVCO1wave, 0);
+    break;
+
   }
 }
 
 void updateleadVCO2wave() {
-  if (leadVCO2wave == 1) {
-    showCurrentParameterPage("VCO2 Wave", "Saw");
-    sr.writePin(LEAD_VCO2_WAVE_LED, HIGH);  // LED on
+  switch (leadVCO2wave) {
+  case 1:
+    showCurrentParameterPage("VCO2 Wave", "Saw Up");
     midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0);
-  } else {
+    midiCCOut(CCleadVCO2wave, 0); 
+    break;
+
+  case 2:
     showCurrentParameterPage("VCO2 Wave", "Square");
-    sr.writePin(LEAD_VCO2_WAVE_LED, LOW);  // LED off
     midiCCOut(CCleadVCO2wave, 127);
     midiCCOut(CCleadVCO2wave, 0);
+    break;
+
+  case 3:
+    showCurrentParameterPage("VCO2 Wave", "Sine");
+    midiCCOut(CCleadVCO2wave, 127);
+    midiCCOut(CCleadVCO2wave, 0);
+    break;
+
+  case 4:
+    showCurrentParameterPage("VCO2 Wave", "Triangle");
+    midiCCOut(CCleadVCO2wave, 127);
+    midiCCOut(CCleadVCO2wave, 0);
+    break;
+
+  case 5:
+    showCurrentParameterPage("VCO2 Wave", "Noise");
+    midiCCOut(CCleadVCO2wave, 127);
+    midiCCOut(CCleadVCO2wave, 0);
+    break;
+
+  case 6:
+    showCurrentParameterPage("VCO2 Wave", "Saw Down");
+    midiCCOut(CCleadVCO2wave, 127);
+    midiCCOut(CCleadVCO2wave, 0);
+    break;
+
   }
 }
 
 void updatepolyWave() {
-  if (polyWave == 1) {
-    showCurrentParameterPage("Poly Wave", "On");
-    sr.writePin(POLY_WAVE_LED, HIGH);  // LED on
+  switch (polyWave) {
+  case 1:
+    showCurrentParameterPage("Poly Wave", "Square");
+    midiCCOut(CCpolyWave, 127);
+    midiCCOut(CCpolyWave, 0); 
+    break;
+
+  case 2:
+    showCurrentParameterPage("Poly Wave", "Triangle");
     midiCCOut(CCpolyWave, 127);
     midiCCOut(CCpolyWave, 0);
-  } else {
-    showCurrentParameterPage("Poly Wave", "Off");
-    sr.writePin(POLY_WAVE_LED, LOW);  // LED off
+    break;
+
+  case 3:
+    showCurrentParameterPage("Poly Wave", "Sine");
     midiCCOut(CCpolyWave, 127);
     midiCCOut(CCpolyWave, 0);
+    break;
+
+  case 4:
+    showCurrentParameterPage("Poly Wave", "Tri-Saw");
+    midiCCOut(CCpolyWave, 127);
+    midiCCOut(CCpolyWave, 0);
+    break;
+
+  case 5:
+    showCurrentParameterPage("Poly Wave", "Lumpy");
+    midiCCOut(CCpolyWave, 127);
+    midiCCOut(CCpolyWave, 0);
+    break;
+
+  case 6:
+    showCurrentParameterPage("Poly Wave", "Sawtooth");
+    midiCCOut(CCpolyWave, 127);
+    midiCCOut(CCpolyWave, 0);
+    break;
+  }
+}
+
+void stoppolyWaveLED() {
+  if ((polywave_timer > 0) && (millis() - polywave_timer > 150)) {
+    sr.writePin(POLY_WAVE_LED, HIGH);
+    polywave_timer = 0;
+  }
+}
+
+void stopvco1WaveLED() {
+  if ((vco1wave_timer > 0) && (millis() - vco1wave_timer > 150)) {
+    sr.writePin(LEAD_VCO1_WAVE_LED, HIGH);
+    vco1wave_timer = 0;
+  }
+}
+
+void stopvco2WaveLED() {
+  if ((vco2wave_timer > 0) && (millis() - vco2wave_timer > 150)) {
+    sr.writePin(LEAD_VCO2_WAVE_LED, HIGH);
+    vco2wave_timer = 0;
   }
 }
 
@@ -1645,13 +1766,13 @@ void updateleadLearn() {
   setLEDDisplay1();
   if (leadLearn == 1) {
     showCurrentParameterPage("Lead Learn", "On");
-    displayLEDNumber( 1, leadBottomNote);
+    displayLEDNumber(1, leadBottomNote);
     display1.blink(232);
     midiCCOut(CCleadLearn, 127);
   } else {
     showCurrentParameterPage("Lead Learn", "Off");
     display1.clear();
-    displayLEDNumber( 1, leadBottomNote);
+    displayLEDNumber(1, leadBottomNote);
     midiCCOut(CCleadLearn, 0);
   }
 }
@@ -1664,24 +1785,24 @@ void displayLEDNumber(int displayNumber, int value) {
   if (value <= 9) {
     setCursorPos = 3;
   }
-  if (value > 9 && value <= 99 ) {
+  if (value > 9 && value <= 99) {
     setCursorPos = 2;
   }
-  if (value > 99 && value <= 999 ) {
+  if (value > 99 && value <= 999) {
     setCursorPos = 1;
   }
   switch (displayNumber) {
     case 0:
-       setLEDDisplay0();
-       display0.setCursor(0, setCursorPos);
-       display0.print(value);
-       break;
+      setLEDDisplay0();
+      display0.setCursor(0, setCursorPos);
+      display0.print(value);
+      break;
 
-  case 1:
-       setLEDDisplay1();
-       display1.setCursor(0, setCursorPos);
-       display1.print(value);
-       break;
+    case 1:
+      setLEDDisplay1();
+      display1.setCursor(0, setCursorPos);
+      display1.print(value);
+      break;
   }
 }
 
@@ -2304,17 +2425,17 @@ void myControlChange(byte channel, byte control, int value) {
       break;
 
     case CCleadVCO1wave:
-      value > 0 ? leadVCO1wave = 1 : leadVCO1wave = 0;
+      leadVCO1wave = value;
       updateleadVCO1wave();
       break;
 
     case CCleadVCO2wave:
-      value > 0 ? leadVCO2wave = 1 : leadVCO2wave = 0;
+      leadVCO2wave = value;
       updateleadVCO2wave();
       break;
 
     case CCpolyWave:
-      value > 0 ? polyWave = 1 : polyWave = 0;
+      polyWave = value;
       updatepolyWave();
       break;
 
@@ -3285,17 +3406,32 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
   }
 
   if (btnIndex == LEAD_VCO1_WAVE_SW && btnType == ROX_PRESSED) {
-    leadVCO1wave = !leadVCO1wave;
+    sr.writePin(LEAD_VCO1_WAVE_LED, LOW);
+    vco1wave_timer = millis();
+    leadVCO1wave = leadVCO1wave + 1;
+    if (leadVCO1wave > 5) {
+      leadVCO1wave = 1;
+    }
     myControlChange(midiChannel, CCleadVCO1wave, leadVCO1wave);
   }
 
   if (btnIndex == LEAD_VCO2_WAVE_SW && btnType == ROX_PRESSED) {
-    leadVCO2wave = !leadVCO2wave;
+    sr.writePin(LEAD_VCO2_WAVE_LED, LOW);
+    vco2wave_timer = millis();
+    leadVCO2wave = leadVCO2wave + 1;
+    if (leadVCO2wave > 6) {
+      leadVCO2wave = 1;
+    }
     myControlChange(midiChannel, CCleadVCO2wave, leadVCO2wave);
   }
 
   if (btnIndex == POLY_WAVE_SW && btnType == ROX_PRESSED) {
-    polyWave = !polyWave;
+    sr.writePin(POLY_WAVE_LED, LOW);
+    polywave_timer = millis();
+    polyWave = polyWave + 1;
+    if (polyWave > 6) {
+      polyWave = 1;
+    }
     myControlChange(midiChannel, CCpolyWave, polyWave);
   }
 
@@ -3569,10 +3705,10 @@ void midiCCOut(byte cc, byte value) {
     switch (ccType) {
       case 0:
         {
-          Serial.println(cc);
+          //Serial.println(cc);
           switch (cc) {
 
-            case 131: // LEad learn
+            case 131:                                   // LEad learn
               usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
               usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
               MIDI.sendNoteOn(121, 127, midiOutCh);     //MIDI DIN is set to Out
@@ -3682,7 +3818,7 @@ void midiCCOut(byte cc, byte value) {
               // Arp Down
               usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
               //usbMIDI.sendNoteOff(126, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(126, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI DIN is set to Out
               //MIDI.sendNoteOff(126, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
@@ -3690,7 +3826,7 @@ void midiCCOut(byte cc, byte value) {
               // Arp Up
               usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
               //usbMIDI.sendNoteOff(125, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(125, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI DIN is set to Out
               //MIDI.sendNoteOff(125, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
@@ -3698,7 +3834,7 @@ void midiCCOut(byte cc, byte value) {
               // Arp UpDown
               usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
               //usbMIDI.sendNoteOff(124, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(124, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI DIN is set to Out
               //MIDI.sendNoteOff(124, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
@@ -3706,7 +3842,7 @@ void midiCCOut(byte cc, byte value) {
               // Arp Random
               usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
               //usbMIDI.sendNoteOff(123, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(123, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI DIN is set to Out
               //MIDI.sendNoteOff(123, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
@@ -4007,6 +4143,42 @@ void checkEncoder() {
   }
 }
 
+void checkEEPROM() {
+
+  if (oldLEDintensity != LEDintensity) {
+    LEDintensity = LEDintensity * 10;
+    trilldisplay.setBacklight(LEDintensity);
+    setLEDDisplay0();
+    display0.setBacklight(LEDintensity);
+    setLEDDisplay1();
+    display1.setBacklight(LEDintensity);
+    setLEDDisplay2();
+    display2.setBacklight(LEDintensity);
+    setLEDDisplay3();
+    display3.setBacklight(LEDintensity);
+    setLEDDisplay4();
+    display4.setBacklight(LEDintensity);
+    setLEDDisplay5();
+    display5.setBacklight(LEDintensity);
+    setLEDDisplay6();
+    display6.setBacklight(LEDintensity);
+    setLEDDisplay7();
+    display7.setBacklight(LEDintensity);
+    oldLEDintensity = LEDintensity;
+  }
+
+  // if (oldSLIDERintensity != SLIDERintensity) {
+  //   Serial.println(SLIDERintensity);
+  //   if (SLIDERintensity == 0) {
+  //   ledpanel.shutdown(0,true);
+  //   }
+  //   if (SLIDERintensity == 1) {
+  //   ledpanel.shutdown(0,false);
+  //   }
+  //   oldSLIDERintensity = SLIDERintensity;
+  // }
+}
+
 void loop() {
   single();
   checkMux();
@@ -4016,6 +4188,10 @@ void loop() {
   sr.update();
   MIDI.read(midiChannel);
   usbMIDI.read(midiChannel);
+  checkEEPROM();
+  stoppolyWaveLED();
+  stopvco1WaveLED();
+  stopvco2WaveLED();
   //  myusb.Task();
   //  midi1.read();   //USB HOST MIDI Class Compliant
 }
