@@ -5,14 +5,19 @@ byte LEDintensity = 10;//(EEPROM)
 byte oldLEDintensity;
 int SLIDERintensity = 1;//(EEPROM)
 int oldSLIDERintensity;
+int learningDisplayNumber = 0;
+int learningNote = 0;
 
 static unsigned long polywave_timer = 0;
 static unsigned long vco1wave_timer = 0;
 static unsigned long vco2wave_timer = 0;
+static unsigned long learn_timer = 0;
 
 int readresdivider = 32;
 int resolutionFrig = 5;
 boolean recallPatchFlag = true;
+boolean learning = false;
+boolean noteArrived = false;
 int setCursorPos = 0;
 
 int CC_ON = 127;
@@ -301,14 +306,17 @@ float portVCO2str = 0;
 
 int ebass16 = 0;
 int ebass8 = 0;
+int bassTopNote = 110;
+int bassBottomNote = 15;
 int leadPWMmod = 0;
 int leadVCFmod = 0;
 int polyLearn = 0;
 int trillUp = 0;
-int trillDown= 0;
+int trillDown = 0;
+int trillValue = 0;
 int leadLearn = 0;
-int leadTopNote = 127;
-int leadBottomNote = 0;
+int leadTopNote = 110;
+int leadBottomNote = 15;
 int leadNPlow = 0;
 int leadNPhigh = 0;
 int leadNPlast = 0;
@@ -336,9 +344,13 @@ int polyDrift = 0;
 int poly16 = 0;
 int poly8 = 0;
 int poly4 = 0;
-int bassNoteTrigger= 0;
+int polyTopNote = 110;
+int polyBottomNote = 15;
+int bassNoteTrigger = 0;
 int stringbass16 = 0;
 int stringbass8 = 0;
+int stringsTopNote = 110;
+int stringsBottomNote = 15;
 int hollowWave = 0;
 int bassLearn = 0;
 int stringsLearn = 0;
@@ -368,7 +380,7 @@ int reverbPolySW = 0;
 int reverbLeadSW = 0;
 
 int arpOnSW = 0;
-int arpDownSW = 0;
+int arpDownSW = 1;
 int arpUpSW = 0;
 int arpUpDownSW = 0;
 int arpRandomSW = 0;

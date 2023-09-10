@@ -29,7 +29,7 @@ const float QUADRAPOLYRELEASE[93] = {200.0, 200.11, 200.51, 201.28, 202.52, 204.
 
 #define RE_READ -9
 #define  NO_OF_VOICES 1
-#define NO_OF_PARAMS 140
+#define NO_OF_PARAMS 150
 const char* INITPATCHNAME = "Initial Patch";
 #define HOLD_DURATION 1000
 const uint32_t CLICK_DURATION = 250;

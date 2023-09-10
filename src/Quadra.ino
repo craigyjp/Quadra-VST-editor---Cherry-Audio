@@ -28,7 +28,6 @@
 #include <SD.h>
 #include <SerialFlash.h>
 #include <MIDI.h>
-#include <USBHost_t36.h>
 #include "MidiCC.h"
 #include "Constants.h"
 #include "Parameters.h"
@@ -56,12 +55,6 @@ unsigned int state = PARAMETER;
 #include "ST7735Display.h"
 
 boolean cardStatus = false;
-
-//USB HOST MIDI Class Compliant
-USBHost myusb;
-USBHub hub1(myusb);
-USBHub hub2(myusb);
-MIDIDevice midi1(myusb);
 
 //MIDI 5 Pin DIN
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
@@ -136,81 +129,55 @@ void setup() {
   trilldisplay.print("   0");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-
+  setLEDDisplay0();
   display0.begin();                     // initializes the display
-  display0.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display0.setBacklight(LEDintensity);  // set the brightness to intensity
   display0.print(" 127");               // display INIT on the display
-  delay(10);                            // wait 1000 ms
+  delay(10);
 
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-
+  setLEDDisplay1();
   display1.begin();                     // initializes the display
-  display1.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display1.setBacklight(LEDintensity);  // set the brightness to intensity
   display1.print("   0");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, LOW);
-
+  setLEDDisplay2();
   display2.begin();                     // initializes the display
-  display2.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display2.setBacklight(LEDintensity);  // set the brightness to intensity
   display2.print(" 127");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, LOW);
-
+  setLEDDisplay3();
   display3.begin();                     // initializes the display
-  display3.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display3.setBacklight(LEDintensity);  // set the brightness to intensity
   display3.print("   0");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, HIGH);
-
+  setLEDDisplay4();
   display4.begin();                     // initializes the display
-  display4.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display4.setBacklight(LEDintensity);  // set the brightness to intensity
   display4.print(" 127");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, HIGH);
-
+  setLEDDisplay5();
   display5.begin();                     // initializes the display
-  display5.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display5.setBacklight(LEDintensity);  // set the brightness to intensity
   display5.print("   0");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, HIGH);
-
+  setLEDDisplay6();
   display6.begin();                     // initializes the display
-  display6.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display6.setBacklight(LEDintensity);  // set the brightness to intensity
   display6.print(" 127");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, HIGH);
-
+  setLEDDisplay7();
   display7.begin();                     // initializes the display
-  display7.setBacklight(LEDintensity);  // set the brightness to 100 %
+  display7.setBacklight(LEDintensity);  // set the brightness to intensity
   display7.print("   0");               // display INIT on the display
   delay(10);
 
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
+  setLEDDisplay0();
 
   cardStatus = SD.begin(BUILTIN_SDCARD);
   if (cardStatus) {
@@ -238,21 +205,19 @@ void setup() {
   //Read UpdateParams type from EEPROM
   updateParams = getUpdateParams();
 
-  //USB HOST MIDI Class Compliant
-  delay(400);  //Wait to turn on USB Host
-               //  myusb.begin();
-               //  midi1.setHandlePitchChange(myPitchBend);
-               //  Serial.println("USB HOST MIDI Class Compliant Listening");
-
   //USB Client MIDI
   usbMIDI.setHandleControlChange(myConvertControlChange);
   usbMIDI.setHandleProgramChange(myProgramChange);
+  usbMIDI.setHandleNoteOff(myNoteOff);
+  usbMIDI.setHandleNoteOn(myNoteOn);
   Serial.println("USB Client MIDI Listening");
 
   //MIDI 5 Pin DIN
   MIDI.begin();
   MIDI.setHandleControlChange(myConvertControlChange);
   MIDI.setHandleProgramChange(myProgramChange);
+  MIDI.setHandleNoteOn(myNoteOn);
+  MIDI.setHandleNoteOff(myNoteOff);
   Serial.println("MIDI In DIN Listening");
 
   //Read Encoder Direction from EEPROM
@@ -267,6 +232,85 @@ void setup() {
   recallPatch(patchNo);  //Load first patch
 }
 
+void myNoteOn(byte channel, byte note, byte velocity) {
+  //Check for out of range notes
+  if (note < 13 || note > 115) return;
+  learningNote = note;
+  noteArrived = true;
+}
+
+void myNoteOff(byte channel, byte note, byte velocity) {
+}
+
+void convertIncomingNote() {
+
+  if (learning && noteArrived) {
+    switch (learningDisplayNumber) {
+
+      case 1:
+        leadBottomNote = learningNote;
+        setLEDDisplay1();
+        display1.setBacklight(LEDintensity);
+        displayLEDNumber(1, leadBottomNote);
+        updateleadTopNote();
+        break;
+
+      case 0:
+        leadTopNote = learningNote;
+        leadLearn = 0;
+        updateleadLearn();
+        learning = false;
+        break;
+
+      case 3:
+        polyBottomNote = learningNote;
+        setLEDDisplay3();
+        display3.setBacklight(LEDintensity);
+        displayLEDNumber(3, polyBottomNote);
+        updatepolyTopNote();
+        break;
+
+      case 2:
+        polyTopNote = learningNote;
+        polyLearn = 0;
+        updatepolyLearn();
+        learning = false;
+        break;
+
+      case 5:
+        stringsBottomNote = learningNote;
+        setLEDDisplay5();
+        display5.setBacklight(LEDintensity);
+        displayLEDNumber(5, stringsBottomNote);
+        updatestringsTopNote();
+        break;
+
+      case 4:
+        stringsTopNote = learningNote;
+        stringsLearn = 0;
+        updatestringsLearn();
+        learning = false;
+        break;
+
+      case 7:
+        bassBottomNote = learningNote;
+        setLEDDisplay7();
+        display7.setBacklight(LEDintensity);
+        displayLEDNumber(7, bassBottomNote);
+        updatebassTopNote();
+        break;
+
+      case 6:
+        bassTopNote = learningNote;
+        bassLearn = 0;
+        updatebassLearn();
+        learning = false;
+        break;
+    }
+    noteArrived = false;
+  }
+}
+
 void myConvertControlChange(byte channel, byte number, byte value) {
   int newvalue = value << 5;
   myControlChange(channel, number, newvalue);
@@ -276,12 +320,11 @@ void single() {
   for (int row = 0; row < 8; row++) {
     for (int col = 0; col < 8; col++) {
       //ledpanel.setIntensity(0, 1);
-      if (SLIDERintensity == 1 ) {
-      ledpanel.setLed(0, row, col, true);
+      if (SLIDERintensity == 1) {
+        ledpanel.setLed(0, row, col, true);
       } else {
-      ledpanel.setLed(0, row, col, false);
+        ledpanel.setLed(0, row, col, false);
       }
-
     }
   }
 }
@@ -297,6 +340,41 @@ void myPitchBend(byte channel, int bend) {
 void allNotesOff() {
 }
 
+void updatetrillUp() {
+  if (trillUp == 1) {
+    trillValue++;
+    if (trillValue > 60) {
+      trillValue = 60;
+    }
+    if (trillValue == 0) {
+      trillValue = 1;
+    }
+    displayLEDNumber(8, trillValue);
+    midiCCOut(CCtrillUp, 127);
+    trillUp = 0;
+    Serial.println(trillValue);
+  } else {
+    displayLEDNumber(8, trillValue);
+  }
+}
+
+void updatetrillDown() {
+  if (trillDown == 1) {
+    trillValue = trillValue - 1;
+    if (trillValue < -60) {
+      trillValue = -60;
+    }
+    if (trillValue == 0) {
+      trillValue = -1;
+    }
+    displayLEDNumber(8, trillValue);
+    midiCCOut(CCtrillDown, 127);
+    Serial.println(trillValue);
+    trillDown = 0;
+  } else {
+    displayLEDNumber(8, trillValue);
+  }
+}
 void updatemodWheel() {
   if (modWheel > 63) {
     showCurrentParameterPage("LFO Wheel", String("On"));
@@ -910,16 +988,15 @@ void updatelead2ndVoice() {
   } else {
     showCurrentParameterPage("2nd Voice", "Off");
     sr.writePin(LEAD_SECOND_VOICE_LED, LOW);  // LED off
-    if ( !recallPatchFlag ) {
+    if (!recallPatchFlag) {
 
       leadNPlow = prevleadNPlow;
       leadNPhigh = prevleadNPhigh;
       leadNPlast = prevleadNPlast;
-   
+
       updateleadNPlow();
       updateleadNPhigh();
       updateleadNPlast();
-
     }
     midiCCOut(CClead2ndVoice, 127);
     midiCCOut(CClead2ndVoice, 0);
@@ -942,138 +1019,115 @@ void updateleadTrill() {
 
 void updateleadVCO1wave() {
   switch (leadVCO1wave) {
-  case 1:
-    showCurrentParameterPage("VCO1 Wave", "Square");
-    midiCCOut(CCleadVCO1wave, 127);
-    midiCCOut(CCleadVCO1wave, 0); 
-    break;
+    case 1:
+      showCurrentParameterPage("VCO1 Wave", "Square");
+      midiCCOut(CCleadVCO1wave, 127);
+      midiCCOut(CCleadVCO1wave, 0);
+      break;
 
-  case 2:
-    showCurrentParameterPage("VCO1 Wave", "Sine");
-    midiCCOut(CCleadVCO1wave, 127);
-    midiCCOut(CCleadVCO1wave, 0);
-    break;
+    case 2:
+      showCurrentParameterPage("VCO1 Wave", "Sine");
+      midiCCOut(CCleadVCO1wave, 127);
+      midiCCOut(CCleadVCO1wave, 0);
+      break;
 
-  case 3:
-    showCurrentParameterPage("VCO1 Wave", "Triangle");
-    midiCCOut(CCleadVCO1wave, 127);
-    midiCCOut(CCleadVCO1wave, 0);
-    break;
+    case 3:
+      showCurrentParameterPage("VCO1 Wave", "Triangle");
+      midiCCOut(CCleadVCO1wave, 127);
+      midiCCOut(CCleadVCO1wave, 0);
+      break;
 
-  case 4:
-    showCurrentParameterPage("VCO1 Wave", "Noise");
-    midiCCOut(CCleadVCO1wave, 127);
-    midiCCOut(CCleadVCO1wave, 0);
-    break;
+    case 4:
+      showCurrentParameterPage("VCO1 Wave", "Noise");
+      midiCCOut(CCleadVCO1wave, 127);
+      midiCCOut(CCleadVCO1wave, 0);
+      break;
 
-  case 5:
-    showCurrentParameterPage("VCO1 Wave", "Saw Up");
-    midiCCOut(CCleadVCO1wave, 127);
-    midiCCOut(CCleadVCO1wave, 0);
-    break;
-
+    case 5:
+      showCurrentParameterPage("VCO1 Wave", "Saw Up");
+      midiCCOut(CCleadVCO1wave, 127);
+      midiCCOut(CCleadVCO1wave, 0);
+      break;
   }
 }
 
 void updateleadVCO2wave() {
   switch (leadVCO2wave) {
-  case 1:
-    showCurrentParameterPage("VCO2 Wave", "Saw Up");
-    midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0); 
-    break;
+    case 1:
+      showCurrentParameterPage("VCO2 Wave", "Saw Up");
+      midiCCOut(CCleadVCO2wave, 127);
+      midiCCOut(CCleadVCO2wave, 0);
+      break;
 
-  case 2:
-    showCurrentParameterPage("VCO2 Wave", "Square");
-    midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0);
-    break;
+    case 2:
+      showCurrentParameterPage("VCO2 Wave", "Square");
+      midiCCOut(CCleadVCO2wave, 127);
+      midiCCOut(CCleadVCO2wave, 0);
+      break;
 
-  case 3:
-    showCurrentParameterPage("VCO2 Wave", "Sine");
-    midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0);
-    break;
+    case 3:
+      showCurrentParameterPage("VCO2 Wave", "Sine");
+      midiCCOut(CCleadVCO2wave, 127);
+      midiCCOut(CCleadVCO2wave, 0);
+      break;
 
-  case 4:
-    showCurrentParameterPage("VCO2 Wave", "Triangle");
-    midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0);
-    break;
+    case 4:
+      showCurrentParameterPage("VCO2 Wave", "Triangle");
+      midiCCOut(CCleadVCO2wave, 127);
+      midiCCOut(CCleadVCO2wave, 0);
+      break;
 
-  case 5:
-    showCurrentParameterPage("VCO2 Wave", "Noise");
-    midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0);
-    break;
+    case 5:
+      showCurrentParameterPage("VCO2 Wave", "Noise");
+      midiCCOut(CCleadVCO2wave, 127);
+      midiCCOut(CCleadVCO2wave, 0);
+      break;
 
-  case 6:
-    showCurrentParameterPage("VCO2 Wave", "Saw Down");
-    midiCCOut(CCleadVCO2wave, 127);
-    midiCCOut(CCleadVCO2wave, 0);
-    break;
-
+    case 6:
+      showCurrentParameterPage("VCO2 Wave", "Saw Down");
+      midiCCOut(CCleadVCO2wave, 127);
+      midiCCOut(CCleadVCO2wave, 0);
+      break;
   }
 }
 
 void updatepolyWave() {
   switch (polyWave) {
-  case 1:
-    showCurrentParameterPage("Poly Wave", "Square");
-    midiCCOut(CCpolyWave, 127);
-    midiCCOut(CCpolyWave, 0); 
-    break;
+    case 1:
+      showCurrentParameterPage("Poly Wave", "Square");
+      midiCCOut(CCpolyWave, 127);
+      midiCCOut(CCpolyWave, 0);
+      break;
 
-  case 2:
-    showCurrentParameterPage("Poly Wave", "Triangle");
-    midiCCOut(CCpolyWave, 127);
-    midiCCOut(CCpolyWave, 0);
-    break;
+    case 2:
+      showCurrentParameterPage("Poly Wave", "Triangle");
+      midiCCOut(CCpolyWave, 127);
+      midiCCOut(CCpolyWave, 0);
+      break;
 
-  case 3:
-    showCurrentParameterPage("Poly Wave", "Sine");
-    midiCCOut(CCpolyWave, 127);
-    midiCCOut(CCpolyWave, 0);
-    break;
+    case 3:
+      showCurrentParameterPage("Poly Wave", "Sine");
+      midiCCOut(CCpolyWave, 127);
+      midiCCOut(CCpolyWave, 0);
+      break;
 
-  case 4:
-    showCurrentParameterPage("Poly Wave", "Tri-Saw");
-    midiCCOut(CCpolyWave, 127);
-    midiCCOut(CCpolyWave, 0);
-    break;
+    case 4:
+      showCurrentParameterPage("Poly Wave", "Tri-Saw");
+      midiCCOut(CCpolyWave, 127);
+      midiCCOut(CCpolyWave, 0);
+      break;
 
-  case 5:
-    showCurrentParameterPage("Poly Wave", "Lumpy");
-    midiCCOut(CCpolyWave, 127);
-    midiCCOut(CCpolyWave, 0);
-    break;
+    case 5:
+      showCurrentParameterPage("Poly Wave", "Lumpy");
+      midiCCOut(CCpolyWave, 127);
+      midiCCOut(CCpolyWave, 0);
+      break;
 
-  case 6:
-    showCurrentParameterPage("Poly Wave", "Sawtooth");
-    midiCCOut(CCpolyWave, 127);
-    midiCCOut(CCpolyWave, 0);
-    break;
-  }
-}
-
-void stoppolyWaveLED() {
-  if ((polywave_timer > 0) && (millis() - polywave_timer > 150)) {
-    sr.writePin(POLY_WAVE_LED, HIGH);
-    polywave_timer = 0;
-  }
-}
-
-void stopvco1WaveLED() {
-  if ((vco1wave_timer > 0) && (millis() - vco1wave_timer > 150)) {
-    sr.writePin(LEAD_VCO1_WAVE_LED, HIGH);
-    vco1wave_timer = 0;
-  }
-}
-
-void stopvco2WaveLED() {
-  if ((vco2wave_timer > 0) && (millis() - vco2wave_timer > 150)) {
-    sr.writePin(LEAD_VCO2_WAVE_LED, HIGH);
-    vco2wave_timer = 0;
+    case 6:
+      showCurrentParameterPage("Poly Wave", "Sawtooth");
+      midiCCOut(CCpolyWave, 127);
+      midiCCOut(CCpolyWave, 0);
+      break;
   }
 }
 
@@ -1770,16 +1824,215 @@ void updatearpHoldSW() {
 void updateleadLearn() {
   setLEDDisplay1();
   if (leadLearn == 1) {
+    learningDisplayNumber = 1;
+    learning = true;
+    learn_timer = millis();
     showCurrentParameterPage("Lead Learn", "On");
     displayLEDNumber(1, leadBottomNote);
-    display1.blink(232);
     midiCCOut(CCleadLearn, 127);
   } else {
+    learning = false;
     showCurrentParameterPage("Lead Learn", "Off");
-    display1.clear();
+    setLEDDisplay1();
+    display1.setBacklight(LEDintensity);
     displayLEDNumber(1, leadBottomNote);
+    delay(10);
+    setLEDDisplay0();
+    display0.setBacklight(LEDintensity);
+    displayLEDNumber(0, leadTopNote);
     midiCCOut(CCleadLearn, 0);
   }
+}
+
+void updateleadTopNote() {
+  setLEDDisplay0();
+  learningDisplayNumber = 0;
+  learning = true;
+  displayLEDNumber(0, leadTopNote);
+  learn_timer = millis();
+}
+
+void updatepolyLearn() {
+  setLEDDisplay3();
+  if (polyLearn == 1) {
+    learningDisplayNumber = 3;
+    learning = true;
+    learn_timer = millis();
+    showCurrentParameterPage("Poly Learn", "On");
+    displayLEDNumber(3, polyBottomNote);
+    midiCCOut(CCpolyLearn, 127);
+  } else {
+    learning = false;
+    showCurrentParameterPage("Poly Learn", "Off");
+    setLEDDisplay3();
+    display3.setBacklight(LEDintensity);
+    displayLEDNumber(3, polyBottomNote);
+    delay(10);
+    setLEDDisplay2();
+    display2.setBacklight(LEDintensity);
+    displayLEDNumber(2, polyTopNote);
+    midiCCOut(CCpolyLearn, 0);
+  }
+}
+
+void updatepolyTopNote() {
+  setLEDDisplay2();
+  learningDisplayNumber = 2;
+  learning = true;
+  displayLEDNumber(2, polyTopNote);
+  learn_timer = millis();
+}
+
+void updatestringsLearn() {
+  setLEDDisplay5();
+  if (stringsLearn == 1) {
+    learningDisplayNumber = 5;
+    learning = true;
+    learn_timer = millis();
+    showCurrentParameterPage("Strings Learn", "On");
+    displayLEDNumber(5, stringsBottomNote);
+    midiCCOut(CCstringsLearn, 127);
+  } else {
+    learning = false;
+    showCurrentParameterPage("Strings Learn", "Off");
+    setLEDDisplay5();
+    display5.setBacklight(LEDintensity);
+    displayLEDNumber(5, stringsBottomNote);
+    delay(10);
+    setLEDDisplay4();
+    display4.setBacklight(LEDintensity);
+    displayLEDNumber(4, stringsTopNote);
+    midiCCOut(CCstringsLearn, 0);
+  }
+}
+
+void updatestringsTopNote() {
+  setLEDDisplay4();
+  learningDisplayNumber = 4;
+  learning = true;
+  displayLEDNumber(4, stringsTopNote);
+  learn_timer = millis();
+}
+
+void updatebassLearn() {
+  setLEDDisplay7();
+  if (bassLearn == 1) {
+    learningDisplayNumber = 7;
+    learning = true;
+    learn_timer = millis();
+    showCurrentParameterPage("Bass Learn", "On");
+    displayLEDNumber(7, bassBottomNote);
+    midiCCOut(CCbassLearn, 127);
+  } else {
+    learning = false;
+    showCurrentParameterPage("Bass Learn", "Off");
+    setLEDDisplay7();
+    display7.setBacklight(LEDintensity);
+    displayLEDNumber(7, bassBottomNote);
+    delay(10);
+    setLEDDisplay6();
+    display6.setBacklight(LEDintensity);
+    displayLEDNumber(6, bassTopNote);
+    midiCCOut(CCbassLearn, 0);
+  }
+}
+
+void updatebassTopNote() {
+  setLEDDisplay6();
+  learningDisplayNumber = 6;
+  learning = true;
+  displayLEDNumber(6, bassTopNote);
+  learn_timer = millis();
+}
+
+void displayNoteRanges() {
+
+  setLEDDisplay1();
+  display1.setBacklight(LEDintensity);
+  displayLEDNumber(1, leadBottomNote);
+  midiCCOut(CCleadLearn, midiOutCh);
+  delay(5);
+  usbMIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
+  delay(5);
+  MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
+
+  setLEDDisplay0();
+  display0.setBacklight(LEDintensity);
+  displayLEDNumber(0, leadTopNote);
+
+  setLEDDisplay3();
+  display3.setBacklight(LEDintensity);
+  displayLEDNumber(3, polyBottomNote);
+  midiCCOut(CCpolyLearn, midiOutCh);
+  delay(5);
+  usbMIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  usbMIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(polyTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  MIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);
+  delay(5);
+  MIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(polyTopNote, 0, midiOutCh);
+  delay(5);
+
+  setLEDDisplay2();
+  display2.setBacklight(LEDintensity);
+  displayLEDNumber(2, polyTopNote);
+
+  setLEDDisplay5();
+  display5.setBacklight(LEDintensity);
+  displayLEDNumber(5, stringsBottomNote);
+  midiCCOut(CCstringsLearn, midiOutCh);
+  delay(5);
+  usbMIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  usbMIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  MIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);
+  delay(5);
+  MIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);
+  delay(5);
+
+  setLEDDisplay4();
+  display4.setBacklight(LEDintensity);
+  displayLEDNumber(4, stringsTopNote);
+
+  setLEDDisplay7();
+  display7.setBacklight(LEDintensity);
+  displayLEDNumber(7, bassBottomNote);
+  midiCCOut(CCbassLearn, midiOutCh);
+  delay(5);
+  usbMIDI.sendNoteOn(bassBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(bassBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  usbMIDI.sendNoteOn(bassTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(bassTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  MIDI.sendNoteOn(bassBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(bassBottomNote, 0, midiOutCh);
+  delay(5);
+  MIDI.sendNoteOn(bassTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(bassTopNote, 0, midiOutCh);
+  delay(5);
+
+  setLEDDisplay6();
+  display6.setBacklight(LEDintensity);
+  displayLEDNumber(6, bassTopNote);
 }
 
 void updatePatchname() {
@@ -1787,7 +2040,7 @@ void updatePatchname() {
 }
 
 void displayLEDNumber(int displayNumber, int value) {
-  if (value <= 9) {
+  if (value > 0 && value <= 9) {
     setCursorPos = 3;
   }
   if (value > 9 && value <= 99) {
@@ -1796,17 +2049,76 @@ void displayLEDNumber(int displayNumber, int value) {
   if (value > 99 && value <= 999) {
     setCursorPos = 1;
   }
+  if (value < 0) {
+    if (value < 0 && value >= -9) {
+      setCursorPos = 2;
+    }
+    if (value < -9 && value >= -99) {
+      setCursorPos = 1;
+    }
+  }
+
   switch (displayNumber) {
     case 0:
       setLEDDisplay0();
+      display0.clear();
       display0.setCursor(0, setCursorPos);
       display0.print(value);
       break;
 
     case 1:
       setLEDDisplay1();
+      display1.clear();
       display1.setCursor(0, setCursorPos);
       display1.print(value);
+      break;
+
+    case 2:
+      setLEDDisplay2();
+      display2.clear();
+      display2.setCursor(0, setCursorPos);
+      display2.print(value);
+      break;
+
+    case 3:
+      setLEDDisplay3();
+      display3.clear();
+      display3.setCursor(0, setCursorPos);
+      display3.print(value);
+      break;
+
+    case 4:
+      setLEDDisplay4();
+      display4.clear();
+      display4.setCursor(0, setCursorPos);
+      display4.print(value);
+      break;
+
+    case 5:
+      setLEDDisplay5();
+      display5.clear();
+      display5.setCursor(0, setCursorPos);
+      display5.print(value);
+      break;
+
+    case 6:
+      setLEDDisplay6();
+      display6.clear();
+      display6.setCursor(0, setCursorPos);
+      display6.print(value);
+      break;
+
+    case 7:
+      setLEDDisplay7();
+      display7.clear();
+      display7.setCursor(0, setCursorPos);
+      display7.print(value);
+      break;
+
+    case 8:
+      trilldisplay.clear();
+      trilldisplay.setCursor(0, setCursorPos);
+      trilldisplay.print(value);
       break;
   }
 }
@@ -2376,17 +2688,17 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyLearn:
       value > 0 ? polyLearn = 1 : polyLearn = 0;
-      //updateleadVCFmod();
+      updatepolyLearn();
       break;
 
     case CCtrillUp:
       value > 0 ? trillUp = 1 : trillUp = 0;
-      //updateleadVCFmod();
+      updatetrillUp();
       break;
 
     case CCtrillDown:
       value > 0 ? trillDown = 1 : trillDown = 0;
-      //updateleadVCFmod();
+      updatetrillDown();
       break;
 
     case CCleadLearn:
@@ -2546,12 +2858,12 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCbassLearn:
       value > 0 ? bassLearn = 1 : bassLearn = 0;
-      //updateleadVCFmod();
+      updatebassLearn();
       break;
 
     case CCstringsLearn:
       value > 0 ? stringsLearn = 1 : stringsLearn = 0;
-      //updateleadVCFmod();
+      updatestringsLearn();
       break;
 
     case CCbassPitchSW:
@@ -2872,6 +3184,16 @@ void setCurrentPatchData(String data[]) {
   arpUpDownSW = data[134].toInt();
   arpRandomSW = data[135].toInt();
   arpHoldSW = data[136].toInt();
+  leadBottomNote = data[137].toInt();
+  leadTopNote = data[138].toInt();
+  polyBottomNote = data[139].toInt();
+  polyTopNote = data[140].toInt();
+  stringsBottomNote = data[141].toInt();
+  stringsTopNote = data[142].toInt();
+  bassBottomNote = data[143].toInt();
+  bassTopNote = data[144].toInt();
+  trillValue = data[145].toInt();
+
   //Mux1
 
   updateleadMix();
@@ -3022,6 +3344,8 @@ void setCurrentPatchData(String data[]) {
   updatearpupDownSW();
   updatearpRandomSW();
   updatearpHoldSW();
+  updatetrillUp();
+  displayNoteRanges();
 
   //Patchname
   updatePatchname();
@@ -3044,16 +3368,13 @@ String getCurrentPatchData() {
          + "," + String(poly8) + "," + String(poly4) + "," + String(bassNoteTrigger) + "," + String(stringbass16) + "," + String(stringbass8) + "," + String(hollowWave) + "," + String(bassPitchSW) + "," + String(stringsPitchSW) + "," + String(polyPitchSW) + "," + String(polyVCFSW)
          + "," + String(leadPitchSW) + "," + String(leadVCFSW) + "," + String(polyAfterSW) + "," + String(leadAfterSW) + "," + String(phaserBassSW) + "," + String(phaserStringsSW) + "," + String(phaserPolySW) + "," + String(phaserLeadSW) + "," + String(chorusBassSW) + "," + String(chorusStringsSW)
          + "," + String(chorusPolySW) + "," + String(chorusLeadSW) + "," + String(echoBassSW) + "," + String(echoStringsSW) + "," + String(echoPolySW) + "," + String(echoLeadSW) + "," + String(reverbBassSW) + "," + String(reverbStringsSW) + "," + String(reverbPolySW) + "," + String(reverbLeadSW)
-         + "," + String(arpOnSW) + "," + String(arpDownSW) + "," + String(arpUpSW) + "," + String(arpUpDownSW) + "," + String(arpRandomSW) + "," + String(arpHoldSW);
+         + "," + String(arpOnSW) + "," + String(arpDownSW) + "," + String(arpUpSW) + "," + String(arpUpDownSW) + "," + String(arpRandomSW) + "," + String(arpHoldSW)
+         + "," + String(leadBottomNote) + "," + String(leadTopNote) + "," + String(polyBottomNote) + "," + String(polyTopNote) + "," + String(stringsBottomNote) + "," + String(stringsTopNote) + "," + String(bassBottomNote) + "," + String(bassTopNote) + "," + String(trillValue);
 }
 
 void checkMux() {
 
   mux1Read = adc->adc1->analogRead(MUX1_S);
-  // mux2Read = adc->adc1->analogRead(MUX2_S);
-  // mux3Read = adc->adc1->analogRead(MUX3_S);
-  // mux4Read = adc->adc1->analogRead(MUX4_S);
-  // mux5Read = adc->adc1->analogRead(MUX5_S);
 
   if (mux1Read > (mux1ValuesPrev[muxInput] + QUANTISE_FACTOR) || mux1Read < (mux1ValuesPrev[muxInput] - QUANTISE_FACTOR)) {
     mux1ValuesPrev[muxInput] = mux1Read;
@@ -3361,12 +3682,12 @@ void onButtonPress(uint16_t btnIndex, uint8_t btnType) {
   }
 
   if (btnIndex == TRILL_UP_SW && btnType == ROX_PRESSED) {
-    trillUp = !trillUp;
+    trillUp = 1;
     myControlChange(midiChannel, CCtrillUp, trillUp);
   }
 
   if (btnIndex == TRILL_DOWN_SW && btnType == ROX_PRESSED) {
-    trillDown = !trillDown;
+    trillDown = 1;
     myControlChange(midiChannel, CCtrillDown, trillDown);
   }
 
@@ -3713,11 +4034,46 @@ void midiCCOut(byte cc, byte value) {
           //Serial.println(cc);
           switch (cc) {
 
+            case 128:                                   // Poly learn
+              usbMIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI USB is set to Out
+              usbMIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
+              MIDI.sendNoteOn(120, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOff(120, 0, midiOutCh);      //MIDI USB is set to Out
+              break;
+
+            case 129:                                   // trill up
+              usbMIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI USB is set to Out
+              usbMIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
+              MIDI.sendNoteOn(116, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOff(116, 0, midiOutCh);      //MIDI USB is set to Out
+              break;
+
+            case 130:                                   // trill down
+              usbMIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI USB is set to Out
+              usbMIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
+              MIDI.sendNoteOn(117, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOff(117, 0, midiOutCh);      //MIDI USB is set to Out
+              break;
+
             case 131:                                   // LEad learn
               usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
               usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
               MIDI.sendNoteOn(121, 127, midiOutCh);     //MIDI DIN is set to Out
               MIDI.sendNoteOff(121, 0, midiOutCh);      //MIDI USB is set to Out
+              break;
+
+            case 132:                                   // bass learn
+              usbMIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI USB is set to Out
+              usbMIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
+              MIDI.sendNoteOn(119, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOff(119, 0, midiOutCh);      //MIDI USB is set to Out
+              break;
+
+            case 133:                                   // strings learn
+              usbMIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI USB is set to Out
+              usbMIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
+              MIDI.sendNoteOn(118, 127, midiOutCh);     //MIDI DIN is set to Out
+              MIDI.sendNoteOff(118, 0, midiOutCh);      //MIDI USB is set to Out
               break;
 
             case 134:
@@ -3822,33 +4178,25 @@ void midiCCOut(byte cc, byte value) {
             case 148:
               // Arp Down
               usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
-              //usbMIDI.sendNoteOff(126, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI DIN is set to Out
-              //MIDI.sendNoteOff(126, 0, midiOutCh);      //MIDI USB is set to Out
+              MIDI.sendNoteOn(126, 127, midiOutCh);     //MIDI DIN is set to Out
               break;
 
             case 149:
               // Arp Up
               usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
-              //usbMIDI.sendNoteOff(125, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI DIN is set to Out
-              //MIDI.sendNoteOff(125, 0, midiOutCh);      //MIDI USB is set to Out
+              MIDI.sendNoteOn(125, 127, midiOutCh);     //MIDI DIN is set to Out
               break;
 
             case 150:
               // Arp UpDown
               usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
-              //usbMIDI.sendNoteOff(124, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI DIN is set to Out
-              //MIDI.sendNoteOff(124, 0, midiOutCh);      //MIDI USB is set to Out
+              MIDI.sendNoteOn(124, 127, midiOutCh);     //MIDI DIN is set to Out
               break;
 
             case 151:
               // Arp Random
               usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
-              //usbMIDI.sendNoteOff(123, 0, midiOutCh);   //MIDI USB is set to Out
-              MIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI DIN is set to Out
-              //MIDI.sendNoteOff(123, 0, midiOutCh);      //MIDI USB is set to Out
+              MIDI.sendNoteOn(123, 127, midiOutCh);     //MIDI DIN is set to Out
               break;
 
             case 152:
@@ -4171,17 +4519,116 @@ void checkEEPROM() {
     display7.setBacklight(LEDintensity);
     oldLEDintensity = LEDintensity;
   }
+}
 
-  // if (oldSLIDERintensity != SLIDERintensity) {
-  //   Serial.println(SLIDERintensity);
-  //   if (SLIDERintensity == 0) {
-  //   ledpanel.shutdown(0,true);
-  //   }
-  //   if (SLIDERintensity == 1) {
-  //   ledpanel.shutdown(0,false);
-  //   }
-  //   oldSLIDERintensity = SLIDERintensity;
-  // }
+void stopLEDs() {
+  if ((polywave_timer > 0) && (millis() - polywave_timer > 150)) {
+    sr.writePin(POLY_WAVE_LED, HIGH);
+    polywave_timer = 0;
+  }
+
+  if ((vco1wave_timer > 0) && (millis() - vco1wave_timer > 150)) {
+    sr.writePin(LEAD_VCO1_WAVE_LED, HIGH);
+    vco1wave_timer = 0;
+  }
+
+  if ((vco2wave_timer > 0) && (millis() - vco2wave_timer > 150)) {
+    sr.writePin(LEAD_VCO2_WAVE_LED, HIGH);
+    vco2wave_timer = 0;
+  }
+}
+
+void flashLearnLED(int displayNumber) {
+
+  if (learning) {
+    if ((learn_timer > 0) && (millis() - learn_timer >= 1000)) {
+      switch (displayNumber) {
+        case 0:
+          setLEDDisplay0();
+          display0.setBacklight(LEDintensity);
+          break;
+
+        case 1:
+          setLEDDisplay1();
+          display1.setBacklight(LEDintensity);
+          break;
+
+        case 2:
+          setLEDDisplay2();
+          display2.setBacklight(LEDintensity);
+          break;
+
+        case 3:
+          setLEDDisplay3();
+          display3.setBacklight(LEDintensity);
+          break;
+
+        case 4:
+          setLEDDisplay4();
+          display4.setBacklight(LEDintensity);
+          break;
+
+        case 5:
+          setLEDDisplay5();
+          display5.setBacklight(LEDintensity);
+          break;
+
+        case 6:
+          setLEDDisplay6();
+          display6.setBacklight(LEDintensity);
+          break;
+
+        case 7:
+          setLEDDisplay7();
+          display7.setBacklight(LEDintensity);
+          break;
+      }
+
+      learn_timer = millis();
+    } else if ((learn_timer > 0) && (millis() - learn_timer >= 500)) {
+      switch (displayNumber) {
+        case 0:
+          setLEDDisplay0();
+          display0.setBacklight(0);
+          break;
+
+        case 1:
+          setLEDDisplay1();
+          display1.setBacklight(0);
+          break;
+
+        case 2:
+          setLEDDisplay2();
+          display2.setBacklight(0);
+          break;
+
+        case 3:
+          setLEDDisplay3();
+          display3.setBacklight(0);
+          break;
+
+        case 4:
+          setLEDDisplay4();
+          display4.setBacklight(0);
+          break;
+
+        case 5:
+          setLEDDisplay5();
+          display5.setBacklight(0);
+          break;
+
+        case 6:
+          setLEDDisplay6();
+          display6.setBacklight(0);
+          break;
+
+        case 7:
+          setLEDDisplay7();
+          display7.setBacklight(0);
+          break;
+      }
+    }
+  }
 }
 
 void loop() {
@@ -4194,9 +4641,7 @@ void loop() {
   MIDI.read(midiChannel);
   usbMIDI.read(midiChannel);
   checkEEPROM();
-  stoppolyWaveLED();
-  stopvco1WaveLED();
-  stopvco2WaveLED();
-  //  myusb.Task();
-  //  midi1.read();   //USB HOST MIDI Class Compliant
+  stopLEDs();
+  flashLearnLED(learningDisplayNumber);
+  convertIncomingNote();
 }
