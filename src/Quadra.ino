@@ -1,8 +1,9 @@
 /*
-  Quadra Editor - Firmware Rev 1.5
+  Quadra Editor - Firmware Rev 1.6
 
   Includes code by:
     Dave Benn - Handling MUXs, a few other bits and original inspiration  https://www.notesandvolts.com/2019/01/teensy-synth-part-10-hardware.html
+    ElectroTechnique for general method of menus and updates.
 
   Arduino IDE
   Tools Settings:
@@ -126,7 +127,7 @@ void setup() {
 
   trilldisplay.begin();                     // initializes the display
   trilldisplay.setBacklight(LEDintensity);  // set the brightness to 100 %
-  trilldisplay.print("   0");               // display INIT on the display
+  trilldisplay.print("   1");               // display INIT on the display
   delay(10);
 
   setLEDDisplay0();
