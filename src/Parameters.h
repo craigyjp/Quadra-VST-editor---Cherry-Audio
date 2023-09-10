@@ -118,6 +118,7 @@ float polyAttackstr = 0;
 int lfoSpeed = 0;
 int lfoSpeedmap = 0;
 float lfoSpeedstr = 0;
+String lfoSpeedstring = "";
 
 int polyDecay =0;
 int polyDecaymap =0;
@@ -146,6 +147,7 @@ float bassPitchstr = 0;
 int echoTime = 0;
 int echoTimemap= 0;
 float echoTimestr = 0;
+String echoTimestring = "";
 
 int stringPitch = 0;
 int stringPitchmap = 0;
@@ -219,6 +221,7 @@ float arpSyncstr = 0;
 int arpSpeed = 0;
 int arpSpeedmap = 0;
 float arpSpeedstr = 0; // for display
+String arpSpeedstring = ""; // for display
 
 int arpRange = 0;
 
