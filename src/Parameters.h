@@ -8,6 +8,8 @@ int oldSLIDERintensity;
 int learningDisplayNumber = 0;
 int learningNote = 0;
 
+byte PlayCommandArray[6] = {0xF0, 0x7F, 0x7F, 0x06, 0x02, 0xF7}; 
+
 static unsigned long polywave_timer = 0;
 static unsigned long vco1wave_timer = 0;
 static unsigned long vco2wave_timer = 0;
