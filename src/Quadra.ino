@@ -2331,15 +2331,13 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCportVCO2:
       portVCO2 = value;
-      portVCO2map = map(portVCO2, 0, 127, 0, 93);
-      portVCO2str = QUADRAPORT[portVCO2map];  // for display
+      portVCO2str = QUADRAPORT[value];  // for display
       updateportVCO2();
       break;
 
     case CCleadMix:
       leadMix = value;
-      leadMixmap = map(leadMix, 0, 127, 0, 94);
-      leadMixstr = QUADRALEVEL[leadMixmap];  // for display
+      leadMixstr = QUADRA100[value];  // for display
       updateleadMix();
       break;
 
@@ -2352,22 +2350,19 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyMix:
       polyMix = value;
-      polyMixmap = map(polyMix, 0, 127, 0, 94);
-      polyMixstr = QUADRALEVEL[polyMixmap];  // for display
+      polyMixstr = QUADRA100[value];  // for display
       updatepolyMix();
       break;
 
     case CCphaserRes:
       phaserRes = value;
-      phaserResmap = map(phaserRes, 0, 127, 0, 94);
-      phaserResstr = QUADRAEFFECTSRES[phaserResmap];  // for display
+      phaserResstr = QUADRA100[value];  // for display
       updatephaserRes();
       break;
 
     case CCstringMix:
       stringMix = value;
-      stringMixmap = map(stringMix, 0, 127, 0, 94);
-      stringMixstr = QUADRALEVEL[stringMixmap];  // for display
+      stringMixstr = QUADRA100[value];  // for display
       updatestringMix();
       break;
 
@@ -2378,8 +2373,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCbassMix:
       bassMix = value;
-      bassMixmap = map(bassMix, 0, 127, 0, 94);
-      bassMixstr = QUADRALEVEL[bassMixmap];  // for display
+      bassMixstr = QUADRA100[value];  // for display
       updatebassMix();
       break;
 
@@ -2397,22 +2391,19 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCchorusDepth:
       chorusDepth = value;
-      chorusDepthmap = map(chorusDepth, 0, 127, 0, 94);
-      chorusDepthstr = QUADRAEFFECTSRES[chorusDepthmap];  // for display
+      chorusDepthstr = QUADRA100[value];  // for display
       updatechorusDepth();
       break;
 
     case CCpolyPWM:
       polyPWM = value;
-      polyPWMmap = map(polyPWM, 0, 127, 0, 94);
-      polyPWMstr = QUADRA100LOG[polyPWMmap];  // for display
+      polyPWMstr = QUADRA100LOG[value];  // for display
       updatepolyPWM();
       break;
 
     case CCchorusRes:
       chorusRes = value;
-      chorusResmap = map(chorusRes, 0, 127, 0, 94);
-      chorusResstr = QUADRAEFFECTSRES[chorusResmap];  // for display
+      chorusResstr = QUADRA100[value];  // for display
       updatechorusRes();
       break;
 
@@ -2435,8 +2426,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyLFOPitch:
       polyLFOPitch = value;
-      polyLFOPitchmap = map(polyLFOPitch, 0, 127, 0, 94);
-      polyLFOPitchstr = QUADRA100LOG[polyLFOPitchmap];
+      polyLFOPitchstr = QUADRA100LOG[value];
       updatepolyLFOPitch();
       break;
 
@@ -2447,8 +2437,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyLFOVCF:
       polyLFOVCF = value;
-      polyLFOVCFmap = map(polyLFOVCF, 0, 127, 0, 94);
-      polyLFOVCFstr = QUADRA100LOG[polyLFOVCFmap];
+      polyLFOVCFstr = QUADRA100LOG[value];
       updatepolyLFOVCF();
       break;
 
@@ -2467,8 +2456,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyVCFCutoff:
       polyVCFCutoff = value;
-      polyVCFCutoffmap = map(polyVCFCutoff, 0, 127, 0, 89);
-      polyVCFCutoffstr = QUADRACUTOFF[polyVCFCutoffmap];
+      polyVCFCutoffstr = QUADRACUTOFF[value];
       updatepolyVCFCutoff();
       break;
 
@@ -2480,8 +2468,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyADSRDepth:
       polyADSRDepth = value;
-      polyADSRDepthmap = map(polyADSRDepth, 0, 127, 0, 94);
-      polyADSRDepthstr = QUADRA100LOG[polyADSRDepthmap];
+      polyADSRDepthstr = QUADRA100LOG[value];
       updatepolyADSRDepth();
       break;
 
@@ -2520,15 +2507,13 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolySustain:
       polySustain = value;
-      polySustainmap = map(polySustain, 0, 127, 0, 94);
-      polySustainstr = QUADRA100_95STEPS[polySustainmap];
+      polySustainstr = QUADRA100[value];
       updatepolySustain();
       break;
 
     case CCleadPWM:
       leadPWM = value;
-      leadPWMmap = map(leadPWM, 0, 127, 0, 94);
-      leadPWMstr = QUADRA100LOG[leadPWMmap];
+      leadPWMstr = QUADRA100LOG[value];
       updateleadPWM();
       break;
 
@@ -2541,8 +2526,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCbassPitch:
       bassPitch = value;
-      bassPitchmap = map(bassPitch, 0, 127, 0, 92);
-      bassPitchstr = QUADRABENDPITCH[bassPitchmap];
+      bassPitchstr = QUADRABENDPITCH[value];
       updatebassPitch();
       break;
 
@@ -2561,50 +2545,43 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCstringPitch:
       stringPitch = value;
-      stringPitchmap = map(stringPitch, 0, 127, 0, 92);
-      stringPitchstr = QUADRABENDPITCH[stringPitchmap];
+      stringPitchstr = QUADRABENDPITCH[value];
       updatestringPitch();
       break;
 
     case CCechoRegen:
       echoRegen = value;
-      echoRegenmap = map(echoRegen, 0, 127, 0, 94);
-      echoRegenstr = QUADRAEFFECTSRES[echoRegenmap];
+      echoRegenstr = QUADRA100[value];
       updateechoRegen();
       break;
 
     case CCpolyPitch:
       polyPitch = value;
-      polyPitchmap = map(polyPitch, 0, 127, 0, 92);
-      polyPitchstr = QUADRABENDPITCH[polyPitchmap];
+      polyPitchstr = QUADRABENDPITCH[value];
       updatepolyPitch();
       break;
 
     case CCechoDamp:
       echoDamp = value;
-      echoDampmap = map(echoDamp, 0, 127, 0, 94);
-      echoDampstr = QUADRAEFFECTSRES[echoDampmap];
+      echoDampstr = QUADRA100[value];
       updateechoDamp();
       break;
 
     case CCpolyVCF:
       polyVCF = value;
-      polyVCFmap = map(polyVCF, 0, 127, 0, 94);
-      polyVCFstr = QUADRA100[polyVCFmap];
+      polyVCFstr = QUADRA100[value];
       updatepolyVCF();
       break;
 
     case CCechoLevel:
       echoLevel = value;
-      echoLevelmap = map(echoLevel, 0, 127, 0, 94);
-      echoLevelstr = QUADRAEFFECTSRES[echoLevelmap];
+      echoLevelstr = QUADRA100[value];
       updateechoLevel();
       break;
 
     case CCleadPitch:
       leadPitch = value;
-      leadPitchmap = map(leadPitch, 0, 127, 0, 92);
-      leadPitchstr = QUADRABENDPITCH[leadPitchmap];
+      leadPitchstr = QUADRABENDPITCH[value];
       updateleadPitch();
       break;
 
@@ -2616,36 +2593,31 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCleadVCF:
       leadVCF = value;
-      leadVCFmap = map(leadVCF, 0, 127, 0, 94);
-      leadVCFstr = QUADRA100[leadVCFmap];
+      leadVCFstr = QUADRA100[value];
       updateleadVCF();
       break;
 
     case CCreverbDecay:
       reverbDecay = value;
-      reverbDecaymap = map(reverbDecay, 0, 127, 0, 94);
-      reverbDecaystr = QUADRAEFFECTSRES[reverbDecaymap];
+      reverbDecaystr = QUADRA100[value];
       updatereverbDecay();
       break;
 
     case CCpolyDepth:
       polyDepth = value;
-      polyDepthmap = map(polyDepth, 0, 127, 0, 94);
-      polyDepthstr = QUADRA100[polyDepthmap];
+      polyDepthstr = QUADRA100[value];
       updatepolyDepth();
       break;
 
     case CCreverbDamp:
       reverbDamp = value;
-      reverbDampmap = map(reverbDamp, 0, 127, 0, 94);
-      reverbDampstr = QUADRAEFFECTSRES[reverbDampmap];
+      reverbDampstr = QUADRA100[value];
       updatereverbDamp();
       break;
 
     case CCleadDepth:
       leadDepth = value;
-      leadDepthmap = map(leadDepth, 0, 127, 0, 94);
-      leadDepthstr = QUADRA100[leadDepthmap];
+      leadDepthstr = QUADRA100[value];
       updateleadDepth();
       break;
 
@@ -2658,22 +2630,19 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCebassRes:
       ebassRes = value;
-      ebassResmap = map(ebassRes, 0, 127, 0, 94);
-      ebassResstr = QUADRA100_95STEPS[ebassResmap];
+      ebassResstr = QUADRA100[value];
       updateebassRes();
       break;
 
     case CCstringBassVolume:
       stringBassVolume = value;
-      stringBassVolumemap = map(stringBassVolume, 0, 127, 0, 94);
-      stringBassVolumestr = QUADRA100_95STEPS[stringBassVolumemap];
+      stringBassVolumestr = QUADRA100[value];
       updatestringBassVolume();
       break;
 
     case CCreverbLevel:
       reverbLevel = value;
-      reverbLevelmap = map(reverbLevel, 0, 127, 0, 94);
-      reverbLevelstr = QUADRAEFFECTSRES[reverbLevelmap];
+      reverbLevelstr = QUADRA100[value];
       updatereverbLevel();
       break;
 
@@ -2739,99 +2708,85 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCportVCO1:
       portVCO1 = value;
-      portVCO1map = map(portVCO1, 0, 127, 0, 93);
-      portVCO1str = QUADRAPORT[portVCO1map];
+      portVCO1str = QUADRAPORT[value];
       updateportVCO1();
       break;
 
     case CCleadLFOPitch:
       leadLFOPitch = value;
-      leadLFOPitchmap = map(leadLFOPitch, 0, 127, 0, 94);
-      leadLFOPitchstr = QUADRA100LOG[leadLFOPitchmap];
+      leadLFOPitchstr = QUADRA100LOG[value];
       updateleadLFOPitch();
       break;
 
     case CCvco1Range:
       vco1Range = value;
-      vco1Rangemap = map(vco1Range, 0, 127, 0, 127);
-      vco1Rangestr = QUADRASEMITONES[vco1Rangemap];
+      vco1Rangestr = QUADRASEMITONES[value];
       updatevco1Range();
       break;
 
     case CCvco2Range:
       vco2Range = value;
-      vco2Rangemap = map(vco2Range, 0, 127, 0, 127);
-      vco2Rangestr = QUADRASEMITONES[vco2Rangemap];
+      vco2Rangestr = QUADRASEMITONES[value];
       updatevco2Range();
       break;
 
     case CCvco2Tune:
       vco2Tune = value;
-      vco2Tunemap = map(vco2Tune, 0, 127, 0, 127);
-      vco2Tunestr = QUADRAEVCO2TUNE[vco2Tunemap];
+      vco2Tunestr = QUADRAEVCO2TUNE[value];
       updatevco2Tune();
       break;
 
     case CCvco2Volume:
       vco2Volume = value;
-      vco2Volumemap = map(vco2Volume, 0, 127, 0, 94);
-      vco2Volumestr = QUADRA100_95STEPS[vco2Volumemap];
+      vco2Volumestr = QUADRA100[value];
       updatevco2Volume();
       break;
 
     case CCEnvtoVCF:
       EnvtoVCF = value;
-      EnvtoVCFmap = map(EnvtoVCF, 0, 127, 0, 94);
-      EnvtoVCFstr = QUADRA100LOG[EnvtoVCFmap];
+      EnvtoVCFstr = QUADRA100LOG[value];
       updateEnvtoVCF();
       break;
 
     case CCleadVCFCutoff:
       leadVCFCutoff = value;
-      leadVCFCutoffmap = map(leadVCFCutoff, 0, 127, 0, 89);
-      leadVCFCutoffstr = QUADRACUTOFF[leadVCFCutoffmap];
+      leadVCFCutoffstr = QUADRACUTOFF[value];
       updateleadVCFCutoff();
       break;
 
     case CCleadVCFRes:
       leadVCFRes = value;
-      leadVCFResmap = map(leadVCFRes, 0, 127, 0, 94);
-      leadVCFResstr = QUADRA100_95STEPS[leadVCFResmap];
+      leadVCFResstr = QUADRA100[value];
       updateleadVCFRes();
       break;
 
     case CCleadAttack:
       leadAttack = value;
-      leadAttackmap = map(leadAttack, 0, 127, 0, 127);
-      leadAttackstr = QUADRALEADATTACK[leadAttackmap];
+      leadAttackstr = QUADRALEADATTACK[value];
       updateleadAttack();
       break;
 
     case CCleadDecay:
       leadDecay = value;
-      leadDecaymap = map(leadDecay, 0, 127, 0, 127);
-      leadDecaystr = QUADRALEADDECAY[leadDecaymap];
+      leadDecaystr = QUADRALEADDECAY[value];
       updateleadDecay();
       break;
 
     case CCleadSustain:
       leadSustain = value;
-      leadSustainmap = map(leadSustain, 0, 127, 0, 94);
-      leadSustainstr = QUADRA100_95STEPS[leadSustainmap];
+      leadSustainstr = QUADRA100[value];
       updateleadSustain();
       break;
 
     case CCleadRelease:
       leadRelease = value;
-      leadReleasemap = map(leadRelease, 0, 127, 0, 127);
-      leadReleasestr = QUADRALEADRELEASE[leadReleasemap];
+      leadReleasestr = QUADRALEADRELEASE[value];
       updateleadRelease();
       break;
 
     case CCmasterTune:
       masterTune = value;
-      masterTunemap = map(masterTune, 0, 127, 0, 127);
-      masterTunestr = QUADRAETUNE[masterTunemap];
+      masterTunestr = QUADRAETUNE[value];
       updatemasterTune();
       break;
 
