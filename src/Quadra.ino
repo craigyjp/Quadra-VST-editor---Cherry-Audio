@@ -253,6 +253,12 @@ void convertIncomingNote() {
         setLEDDisplay1();
         display1.setBacklight(LEDintensity);
         displayLEDNumber(1, leadBottomNote);
+        // delay(5);
+        // usbMIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+        // usbMIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+        // delay(5);
+        // MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+        // MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
         updateleadTopNote();
         break;
 
@@ -261,6 +267,12 @@ void convertIncomingNote() {
         leadLearn = 0;
         updateleadLearn();
         learning = false;
+        // delay(5);
+        // usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+        // usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+        // delay(5);
+        // MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+        // MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
         break;
 
       case 3:
@@ -313,7 +325,7 @@ void convertIncomingNote() {
 }
 
 void myConvertControlChange(byte channel, byte number, byte value) {
-  int newvalue = value << 5;
+  int newvalue = value;
   myControlChange(channel, number, newvalue);
 }
 
@@ -1974,6 +1986,11 @@ void updateleadLearn() {
     setLEDDisplay0();
     display0.setBacklight(LEDintensity);
     displayLEDNumber(0, leadTopNote);
+    // usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+    // usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+    // delay(5);
+    // MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+    // MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
     midiCCOut(CCleadLearn, 0);
   }
 }
@@ -2079,7 +2096,7 @@ void updatebassTopNote() {
   learn_timer = millis();
 }
 
-void displayNoteRanges() {
+void updatedisplayNoteRanges() {
 
   setLEDDisplay1();
   display1.setBacklight(LEDintensity);
@@ -2091,10 +2108,10 @@ void displayNoteRanges() {
   delay(5);
   usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
   usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
 
@@ -2112,13 +2129,12 @@ void displayNoteRanges() {
   delay(5);
   usbMIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI USB is set to Out
   usbMIDI.sendNoteOff(polyTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(polyTopNote, 0, midiOutCh);
-  delay(5);
 
   setLEDDisplay2();
   display2.setBacklight(LEDintensity);
@@ -2134,13 +2150,13 @@ void displayNoteRanges() {
   delay(5);
   usbMIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI USB is set to Out
   usbMIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);
-  delay(5);
+
 
   setLEDDisplay4();
   display4.setBacklight(LEDintensity);
@@ -2156,13 +2172,13 @@ void displayNoteRanges() {
   delay(5);
   usbMIDI.sendNoteOn(bassTopNote, 127, midiOutCh);  //MIDI USB is set to Out
   usbMIDI.sendNoteOff(bassTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(bassBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(bassBottomNote, 0, midiOutCh);
-  delay(5);
+  delay(10);
   MIDI.sendNoteOn(bassTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
   MIDI.sendNoteOff(bassTopNote, 0, midiOutCh);
-  delay(5);
+
 
   setLEDDisplay6();
   display6.setBacklight(LEDintensity);
@@ -2737,21 +2753,21 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCvco1Range:
       vco1Range = value;
-      vco1Rangemap = map(vco1Range, 0, 127, 0, 98);
+      vco1Rangemap = map(vco1Range, 0, 127, 0, 127);
       vco1Rangestr = QUADRASEMITONES[vco1Rangemap];
       updatevco1Range();
       break;
 
     case CCvco2Range:
       vco2Range = value;
-      vco2Rangemap = map(vco2Range, 0, 127, 0, 98);
+      vco2Rangemap = map(vco2Range, 0, 127, 0, 127);
       vco2Rangestr = QUADRASEMITONES[vco2Rangemap];
       updatevco2Range();
       break;
 
     case CCvco2Tune:
       vco2Tune = value;
-      vco2Tunemap = map(vco2Tune, 0, 127, 0, 86);
+      vco2Tunemap = map(vco2Tune, 0, 127, 0, 127);
       vco2Tunestr = QUADRAEVCO2TUNE[vco2Tunemap];
       updatevco2Tune();
       break;
@@ -2814,7 +2830,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCmasterTune:
       masterTune = value;
-      masterTunemap = map(masterTune, 0, 127, 0, 93);
+      masterTunemap = map(masterTune, 0, 127, 0, 127);
       masterTunestr = QUADRAETUNE[masterTunemap];
       updatemasterTune();
       break;
@@ -3499,7 +3515,9 @@ void setCurrentPatchData(String data[]) {
   updatearpRandomSW();
   updatearpHoldSW();
   updateTrills();
-  displayNoteRanges();
+  delay(10);
+  updatedisplayNoteRanges();
+  
 
   //Patchname
   updatePatchname();
