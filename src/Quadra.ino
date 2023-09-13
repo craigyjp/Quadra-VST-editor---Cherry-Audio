@@ -2351,8 +2351,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCphaserSpeed:
       phaserSpeed = value;
-      phaserSpeedmap = map(phaserSpeed, 0, 127, 0, 94);
-      phaserSpeedstr = QUADRAPHASER[phaserSpeedmap];  // for display
+      phaserSpeedstr = QUADRAPHASER[value];  // for display
       updatephaserSpeed();
       break;
 
@@ -2387,8 +2386,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCchorusSpeed:
       chorusSpeed = value;
-      chorusSpeedmap = map(chorusSpeed, 0, 127, 0, 90);
-      chorusSpeedstr = QUADRACHORUS[chorusSpeedmap];  // for display
+      chorusSpeedstr = QUADRACHORUS[value];  // for display
       updatechorusSpeed();
       break;
 
@@ -2450,8 +2448,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyVCFRes:
       polyVCFRes = value;
-      polyVCFResmap = map(polyVCFRes, 0, 127, 0, 94);
-      polyVCFResstr = QUADRAVCFRES[polyVCFResmap];
+      polyVCFResstr = QUADRAVCFRES[value];
       updatepolyVCFRes();
       break;
 
@@ -2488,8 +2485,7 @@ void myControlChange(byte channel, byte control, int value) {
     case CClfoSpeed:
       lfoSpeed = value;
       if (lfoSync < 63) {
-        lfoSpeedmap = map(lfoSpeed, 0, 127, 0, 92);
-        lfoSpeedstr = QUADRALFO[lfoSpeedmap];
+        lfoSpeedstr = QUADRALFO[value];
       } else {
         lfoSpeedmap = map(lfoSpeed, 0, 127, 0, 19);
         lfoSpeedstring = QUADRAARPSYNC[lfoSpeedmap];
@@ -2499,8 +2495,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyDecay:
       polyDecay = value;
-      polyDecaymap = map(polyDecay, 0, 127, 0, 93);
-      polyDecaystr = QUADRAPOLYDECAY[polyDecaymap];
+      polyDecaystr = QUADRAPOLYDECAY[value];
       updatepolyDecay();
       break;
 
@@ -2524,8 +2519,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyRelease:
       polyRelease = value;
-      polyReleasemap = map(polyRelease, 0, 127, 0, 92);
-      polyReleasestr = QUADRAPOLYRELEASE[polyReleasemap];
+      polyReleasestr = QUADRAPOLYRELEASE[value];
       updatepolyRelease();
       break;
 
@@ -2538,8 +2532,7 @@ void myControlChange(byte channel, byte control, int value) {
     case CCechoTime:
       echoTime = value;
       if (echoSync < 63) {
-        echoTimemap = map(echoTime, 0, 127, 0, 94);
-        echoTimestr = QUADRAECHOTIME[echoTimemap];
+        echoTimestr = QUADRAECHOTIME[value];
       }
       if (echoSync > 63) {
         echoTimemap = map(echoTime, 0, 127, 0, 19);
@@ -2659,8 +2652,7 @@ void myControlChange(byte channel, byte control, int value) {
     case CCarpSpeed:
       arpSpeed = value;
       if (arpSync < 63) {
-        arpSpeedmap = map(arpSpeed, 0, 127, 0, 92);
-        arpSpeedstr = QUADRAARPSPEED[arpSpeedmap];
+        arpSpeedstr = QUADRAARPSPEED[value];
       } else {
         arpSpeedmap = map(arpSpeed, 0, 127, 0, 19);
         arpSpeedstring = QUADRAARPSYNC[arpSpeedmap];
@@ -2792,8 +2784,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCmasterVolume:
       masterVolume = value;
-      masterVolumemap = map(masterVolume, 0, 127, 0, 93);
-      masterVolumestr = QUADRAVOLUME[masterVolumemap];
+      masterVolumestr = QUADRAVOLUME[value];
       updatemasterVolume();
       break;
 
