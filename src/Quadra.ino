@@ -804,12 +804,20 @@ void updatehighEQ() {
 }
 
 void updatestringRelease() {
-  showCurrentParameterPage("String Release", String(stringReleasestr) + " ms");
+  if (stringReleasestr < 1000) {
+    showCurrentParameterPage("String Release", String(stringReleasestr) + " ms");
+  } else {
+    showCurrentParameterPage("String Release", String(stringReleasestr * 0.001) + " s");
+  }
   midiCCOut(CCstringRelease, stringRelease);
 }
 
 void updatestringAttack() {
-  showCurrentParameterPage("String Attack", String(stringAttackstr) + " ms");
+  if (stringAttackstr < 1000) {
+    showCurrentParameterPage("String Attack", String(stringAttackstr) + " ms");
+  } else {
+    showCurrentParameterPage("String Attack", String(stringAttackstr * 0.001) + " s");
+  }
   midiCCOut(CCstringAttack, stringAttack);
 }
 
@@ -2409,8 +2417,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyPW:
       polyPW = value;
-      polyPWmap = map(polyPW, 0, 127, 0, 94);
-      polyPWstr = QUADRAINITPW[polyPWmap];  // for display
+      polyPWstr = QUADRAINITPW[value];  // for display
       updatepolyPW();
       break;
 
@@ -2474,8 +2481,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCpolyAttack:
       polyAttack = value;
-      polyAttackmap = map(polyAttack, 0, 127, 0, 89);
-      polyAttackstr = QUADRAPOLYATTACK[polyAttackmap];
+      polyAttackstr = QUADRAPOLYATTACK[value];
       updatepolyAttack();
       break;
 
@@ -2500,8 +2506,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCleadPW:
       leadPW = value;
-      leadPWmap = map(leadPW, 0, 127, 0, 94);
-      leadPWstr = QUADRAINITPW[leadPWmap];
+      leadPWstr = QUADRAINITPW[value];
       updateleadPW();
       break;
 
@@ -2623,8 +2628,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCebassDecay:
       ebassDecay = value;
-      ebassDecaymap = map(ebassDecay, 0, 127, 0, 94);
-      ebassDecaystr = QUADRAEBASSDECAY[ebassDecaymap];
+      ebassDecaystr = QUADRAEBASSDECAY[value];
       updateebassDecay();
       break;
 
@@ -2672,29 +2676,25 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CClowEQ:
       lowEQ = value;
-      lowEQmap = map(lowEQ, 0, 127, 0, 94);
-      lowEQstr = QUADRAEQ[lowEQmap];
+      lowEQstr = QUADRAEQ[value];
       updatelowEQ();
       break;
 
     case CChighEQ:
       highEQ = value;
-      highEQmap = map(highEQ, 0, 127, 0, 94);
-      highEQstr = QUADRAEQ[highEQmap];
+      highEQstr = QUADRAEQ[value];
       updatehighEQ();
       break;
 
     case CCstringAttack:
       stringAttack = value;
-      stringAttackmap = map(stringAttack, 0, 127, 0, 91);
-      stringAttackstr = QUADRAESTRINGSATTACK[stringAttackmap];
+      stringAttackstr = QUADRAESTRINGSATTACK[value];
       updatestringAttack();
       break;
 
     case CCstringRelease:
       stringRelease = value;
-      stringReleasemap = map(stringRelease, 0, 127, 0, 93);
-      stringReleasestr = QUADRAESTRINGSRELEASE[stringReleasemap];
+      stringReleasestr = QUADRAESTRINGSRELEASE[value];
       updatestringRelease();
       break;
 
@@ -3472,7 +3472,7 @@ void setCurrentPatchData(String data[]) {
   updateTrills();
   delay(10);
   updatedisplayNoteRanges();
-  
+
 
   //Patchname
   updatePatchname();
