@@ -221,6 +221,7 @@ void setup() {
   midi1.setHandleNoteOff(myNoteOff);
   midi1.setHandleNoteOn(myNoteOn);
   midi1.setHandlePitchChange(myPitchBend);
+  midi1.setHandleAfterTouch(myAfterTouch);
   Serial.println("USB HOST MIDI Class Compliant Listening");
 
   //USB Client MIDI
@@ -229,6 +230,7 @@ void setup() {
   usbMIDI.setHandleNoteOff(myNoteOff);
   usbMIDI.setHandleNoteOn(myNoteOn);
   usbMIDI.setHandlePitchChange(myPitchBend);
+  usbMIDI.setHandleAfterTouch(myAfterTouch);
   Serial.println("USB Client MIDI Listening");
 
   //MIDI 5 Pin DIN
@@ -237,7 +239,8 @@ void setup() {
   MIDI.setHandleProgramChange(myProgramChange);
   MIDI.setHandleNoteOn(myNoteOn);
   MIDI.setHandleNoteOff(myNoteOff);
-  usbMIDI.setHandlePitchChange(myPitchBend);
+  MIDI.setHandlePitchBend(myPitchBend);
+  MIDI.setHandleAfterTouchChannel(myAfterTouch);
   Serial.println("MIDI In DIN Listening");
 
   //Read Encoder Direction from EEPROM
@@ -253,15 +256,19 @@ void setup() {
 }
 
 void myNoteOn(byte channel, byte note, byte velocity) {
-  //Check for out of range notes
-  //if (note < 13 || note > 115) return;
+  if (learning) {
   learningNote = note;
   noteArrived = true;
+  }
+  if (!learning) {
   usbMIDI.sendNoteOn(note, velocity, channel);
+  }
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
+  if (!learning) {
   usbMIDI.sendNoteOff(note, velocity, channel);
+  }
 }
 
 void convertIncomingNote() {
@@ -274,12 +281,6 @@ void convertIncomingNote() {
         setLEDDisplay1();
         display1.setBacklight(LEDintensity);
         displayLEDNumber(1, leadBottomNote);
-        // delay(5);
-        // usbMIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
-        // usbMIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
-        // delay(5);
-        // MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-        // MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
         updateleadTopNote();
         break;
 
@@ -287,13 +288,8 @@ void convertIncomingNote() {
         leadTopNote = learningNote;
         leadLearn = 0;
         updateleadLearn();
+        refreshLeadNotes();
         learning = false;
-        // delay(5);
-        // usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
-        // usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-        // delay(5);
-        // MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-        // MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
         break;
 
       case 3:
@@ -308,6 +304,7 @@ void convertIncomingNote() {
         polyTopNote = learningNote;
         polyLearn = 0;
         updatepolyLearn();
+        refreshPolyNotes();
         learning = false;
         break;
 
@@ -323,6 +320,7 @@ void convertIncomingNote() {
         stringsTopNote = learningNote;
         stringsLearn = 0;
         updatestringsLearn();
+        refreshStringNotes();
         learning = false;
         break;
 
@@ -338,6 +336,7 @@ void convertIncomingNote() {
         bassTopNote = learningNote;
         bassLearn = 0;
         updatebassLearn();
+        refreshBassNotes();
         learning = false;
         break;
     }
@@ -365,6 +364,10 @@ void single() {
 
 void myPitchBend(byte channel, int bend) {
   usbMIDI.sendPitchBend(bend, channel);
+}
+
+void myAfterTouch(byte channel, byte pressure) {
+  usbMIDI.sendAfterTouch(pressure, channel);
 }
 
 void allNotesOff() {
@@ -2004,9 +2007,8 @@ void updateleadLearn() {
     learn_timer = millis();
     showCurrentParameterPage("Lead Learn", "On");
     displayLEDNumber(1, leadBottomNote);
-    midiCCOut(CCleadLearn, 127);
   } else {
-    learning = false;
+    //learning = false;
     showCurrentParameterPage("Lead Learn", "Off");
     setLEDDisplay1();
     display1.setBacklight(LEDintensity);
@@ -2015,13 +2017,30 @@ void updateleadLearn() {
     setLEDDisplay0();
     display0.setBacklight(LEDintensity);
     displayLEDNumber(0, leadTopNote);
-    // usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
-    // usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-    // delay(5);
-    // MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-    // MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
-    midiCCOut(CCleadLearn, 0);
+    learning = false;
   }
+}
+
+void refreshLeadNotes() {
+    setLEDDisplay1();
+    display1.setBacklight(LEDintensity);
+    displayLEDNumber(1, leadBottomNote);
+    midiCCOut(CCleadLearn, midiOutCh);
+    delay(5);
+    usbMIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+    usbMIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+    delay(5);
+    usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+    usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+    delay(10);
+    MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+    MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
+    delay(10);
+    MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+    MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
+    setLEDDisplay0();
+    display0.setBacklight(LEDintensity);
+    displayLEDNumber(0, leadTopNote);
 }
 
 void updateleadTopNote() {
@@ -2055,6 +2074,29 @@ void updatepolyLearn() {
   }
 }
 
+void refreshPolyNotes() {
+  setLEDDisplay3();
+  display3.setBacklight(LEDintensity);
+  displayLEDNumber(3, polyBottomNote);
+  midiCCOut(CCpolyLearn, midiOutCh);
+  delay(5);
+  usbMIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  usbMIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(polyTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(10);
+  MIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);
+  delay(10);
+  MIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(polyTopNote, 0, midiOutCh);
+
+  setLEDDisplay2();
+  display2.setBacklight(LEDintensity);
+  displayLEDNumber(2, polyTopNote);
+}
+
 void updatepolyTopNote() {
   setLEDDisplay2();
   learningDisplayNumber = 2;
@@ -2084,6 +2126,30 @@ void updatestringsLearn() {
     displayLEDNumber(4, stringsTopNote);
     midiCCOut(CCstringsLearn, 0);
   }
+}
+
+void refreshStringNotes() {
+  setLEDDisplay5();
+  display5.setBacklight(LEDintensity);
+  displayLEDNumber(5, stringsBottomNote);
+  midiCCOut(CCstringsLearn, midiOutCh);
+  delay(5);
+  usbMIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(5);
+  usbMIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI USB is set to Out
+  usbMIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);   //MIDI USB is set to Out
+  delay(10);
+  MIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);
+  delay(10);
+  MIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);
+
+
+  setLEDDisplay4();
+  display4.setBacklight(LEDintensity);
+  displayLEDNumber(4, stringsTopNote);
 }
 
 void updatestringsTopNote() {
@@ -2117,80 +2183,7 @@ void updatebassLearn() {
   }
 }
 
-void updatebassTopNote() {
-  setLEDDisplay6();
-  learningDisplayNumber = 6;
-  learning = true;
-  displayLEDNumber(6, bassTopNote);
-  learn_timer = millis();
-}
-
-void updatedisplayNoteRanges() {
-
-  setLEDDisplay1();
-  display1.setBacklight(LEDintensity);
-  displayLEDNumber(1, leadBottomNote);
-  midiCCOut(CCleadLearn, midiOutCh);
-  delay(5);
-  usbMIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
-  usbMIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
-  usbMIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI USB is set to Out
-  usbMIDI.sendNoteOff(leadTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(10);
-  MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
-
-  setLEDDisplay0();
-  display0.setBacklight(LEDintensity);
-  displayLEDNumber(0, leadTopNote);
-
-  setLEDDisplay3();
-  display3.setBacklight(LEDintensity);
-  displayLEDNumber(3, polyBottomNote);
-  midiCCOut(CCpolyLearn, midiOutCh);
-  delay(5);
-  usbMIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
-  usbMIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
-  usbMIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI USB is set to Out
-  usbMIDI.sendNoteOff(polyTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(10);
-  MIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(polyTopNote, 0, midiOutCh);
-
-  setLEDDisplay2();
-  display2.setBacklight(LEDintensity);
-  displayLEDNumber(2, polyTopNote);
-
-  setLEDDisplay5();
-  display5.setBacklight(LEDintensity);
-  displayLEDNumber(5, stringsBottomNote);
-  midiCCOut(CCstringsLearn, midiOutCh);
-  delay(5);
-  usbMIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI USB is set to Out
-  usbMIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(5);
-  usbMIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI USB is set to Out
-  usbMIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);   //MIDI USB is set to Out
-  delay(10);
-  MIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);
-
-
-  setLEDDisplay4();
-  display4.setBacklight(LEDintensity);
-  displayLEDNumber(4, stringsTopNote);
-
+void refreshBassNotes() {
   setLEDDisplay7();
   display7.setBacklight(LEDintensity);
   displayLEDNumber(7, bassBottomNote);
@@ -2212,6 +2205,14 @@ void updatedisplayNoteRanges() {
   setLEDDisplay6();
   display6.setBacklight(LEDintensity);
   displayLEDNumber(6, bassTopNote);
+}
+
+void updatebassTopNote() {
+  setLEDDisplay6();
+  learningDisplayNumber = 6;
+  learning = true;
+  displayLEDNumber(6, bassTopNote);
+  learn_timer = millis();
 }
 
 void updatePatchname() {
@@ -3487,8 +3488,10 @@ void setCurrentPatchData(String data[]) {
   updatearpHoldSW();
   updateTrills();
   delay(10);
-  updatedisplayNoteRanges();
-
+  refreshLeadNotes();
+  refreshPolyNotes();
+  refreshStringNotes();
+  refreshBassNotes();
 
   //Patchname
   updatePatchname();
@@ -4778,12 +4781,12 @@ void flashLearnLED(int displayNumber) {
 }
 
 void loop() {
-  single();   // Keeps the lights on sliders on
-  checkMux();  // Read the sliders and switches
-  checkSwitches(); // Read the buttons for the program menus etc
-  checkEncoder(); // check the encoder status
-  octoswitch.update(); // read all the buttons for the Quadra
-  sr.update(); // update all the LEDs in the buttons
+  single();             // Keeps the lights on sliders on
+  checkMux();           // Read the sliders and switches
+  checkSwitches();      // Read the buttons for the program menus etc
+  checkEncoder();       // check the encoder status
+  octoswitch.update();  // read all the buttons for the Quadra
+  sr.update();          // update all the LEDs in the buttons
 
   // Read all the MIDI ports
   myusb.Task();
@@ -4791,8 +4794,8 @@ void loop() {
   MIDI.read(midiChannel);
   usbMIDI.read(midiChannel);
 
-  checkEEPROM(); // check anything that may have changed form the initial startup
-  stopLEDs(); // blink the wave LEDs once when pressed
-  flashLearnLED(learningDisplayNumber); // Flash the corresponding learn LED display when button pressed
-  convertIncomingNote(); // read a note when in learn mode and use it to set the values
+  checkEEPROM();                         // check anything that may have changed form the initial startup
+  stopLEDs();                            // blink the wave LEDs once when pressed
+  flashLearnLED(learningDisplayNumber);  // Flash the corresponding learn LED display when button pressed
+  convertIncomingNote();                 // read a note when in learn mode and use it to set the values
 }
