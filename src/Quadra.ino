@@ -1,5 +1,5 @@
 /*
-  Quadra Editor - Firmware Rev 1.6
+  Quadra Editor - Firmware Rev 1.7
 
   Includes code by:
     Dave Benn - Handling MUXs, a few other bits and original inspiration  https://www.notesandvolts.com/2019/01/teensy-synth-part-10-hardware.html
@@ -29,6 +29,7 @@
 #include <SD.h>
 #include <SerialFlash.h>
 #include <MIDI.h>
+#include <USBHost_t36.h>
 #include "MidiCC.h"
 #include "Constants.h"
 #include "Parameters.h"
@@ -56,6 +57,12 @@ unsigned int state = PARAMETER;
 #include "ST7735Display.h"
 
 boolean cardStatus = false;
+
+//USB HOST MIDI Class Compliant
+USBHost myusb;
+USBHub hub1(myusb);
+USBHub hub2(myusb);
+MIDIDevice midi1(myusb);
 
 //MIDI 5 Pin DIN
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
@@ -206,11 +213,22 @@ void setup() {
   //Read UpdateParams type from EEPROM
   updateParams = getUpdateParams();
 
+  //USB HOST MIDI Class Compliant
+  delay(400);  //Wait to turn on USB Host
+  myusb.begin();
+  midi1.setHandleControlChange(myConvertControlChange);
+  midi1.setHandleProgramChange(myProgramChange);
+  midi1.setHandleNoteOff(myNoteOff);
+  midi1.setHandleNoteOn(myNoteOn);
+  midi1.setHandlePitchChange(myPitchBend);
+  Serial.println("USB HOST MIDI Class Compliant Listening");
+
   //USB Client MIDI
   usbMIDI.setHandleControlChange(myConvertControlChange);
   usbMIDI.setHandleProgramChange(myProgramChange);
   usbMIDI.setHandleNoteOff(myNoteOff);
   usbMIDI.setHandleNoteOn(myNoteOn);
+  usbMIDI.setHandlePitchChange(myPitchBend);
   Serial.println("USB Client MIDI Listening");
 
   //MIDI 5 Pin DIN
@@ -219,6 +237,7 @@ void setup() {
   MIDI.setHandleProgramChange(myProgramChange);
   MIDI.setHandleNoteOn(myNoteOn);
   MIDI.setHandleNoteOff(myNoteOff);
+  usbMIDI.setHandlePitchChange(myPitchBend);
   Serial.println("MIDI In DIN Listening");
 
   //Read Encoder Direction from EEPROM
@@ -235,12 +254,14 @@ void setup() {
 
 void myNoteOn(byte channel, byte note, byte velocity) {
   //Check for out of range notes
-  if (note < 13 || note > 115) return;
+  //if (note < 13 || note > 115) return;
   learningNote = note;
   noteArrived = true;
+  usbMIDI.sendNoteOn(note, velocity, channel);
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
+  usbMIDI.sendNoteOff(note, velocity, channel);
 }
 
 void convertIncomingNote() {
@@ -2331,6 +2352,10 @@ void setLEDDisplay7() {
 
 void myControlChange(byte channel, byte control, int value) {
   switch (control) {
+
+    case CCmodWheelinput:
+      usbMIDI.sendControlChange(control, value, channel);
+      break;
 
     case CCmodWheel:
       modWheel = value;
@@ -4753,16 +4778,21 @@ void flashLearnLED(int displayNumber) {
 }
 
 void loop() {
-  single();
-  checkMux();
-  checkSwitches();
-  checkEncoder();
-  octoswitch.update();
-  sr.update();
+  single();   // Keeps the lights on sliders on
+  checkMux();  // Read the sliders and switches
+  checkSwitches(); // Read the buttons for the program menus etc
+  checkEncoder(); // check the encoder status
+  octoswitch.update(); // read all the buttons for the Quadra
+  sr.update(); // update all the LEDs in the buttons
+
+  // Read all the MIDI ports
+  myusb.Task();
+  midi1.read();  //USB HOST MIDI Class Compliant
   MIDI.read(midiChannel);
   usbMIDI.read(midiChannel);
-  checkEEPROM();
-  stopLEDs();
-  flashLearnLED(learningDisplayNumber);
-  convertIncomingNote();
+
+  checkEEPROM(); // check anything that may have changed form the initial startup
+  stopLEDs(); // blink the wave LEDs once when pressed
+  flashLearnLED(learningDisplayNumber); // Flash the corresponding learn LED display when button pressed
+  convertIncomingNote(); // read a note when in learn mode and use it to set the values
 }

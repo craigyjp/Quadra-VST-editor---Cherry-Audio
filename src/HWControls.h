@@ -301,6 +301,7 @@ ADC *adc = new ADC();
 #define DEBOUNCE 30
 
 static byte muxInput = 0;
+
 static int mux1ValuesPrev[MUXCHANNELS] = {};
 static int mux2ValuesPrev[MUXCHANNELS] = {};
 static int mux3ValuesPrev[MUXCHANNELS] = {};
