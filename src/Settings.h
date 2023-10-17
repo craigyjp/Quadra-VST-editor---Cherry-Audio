@@ -62,7 +62,7 @@ void settingsEncoderDir(int index, const char *value) {
 }
 
 void settingsUpdateParams(int index, const char *value) {
-  if (strcmp(value, "Send Params") == 1) {
+  if (strcmp(value, "Send Params") == 0) {
     updateParams = true;
   } else {
     updateParams =  false;
@@ -106,7 +106,7 @@ int currentIndexEncoderDir() {
 }
 
 int currentIndexUpdateParams() {
-  return getUpdateParams() ? 0 : 1;
+  return getUpdateParams() ? 1 : 0;
 }
 
 int currentIndexCCType() {
@@ -118,7 +118,7 @@ void setUpSettings() {
   settings::append(settings::SettingsOption{"MIDI Ch.", {"All", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "\0"}, settingsMIDICh, currentIndexMIDICh});
   settings::append(settings::SettingsOption{"MIDI Out Ch.", {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "\0"}, settingsMIDIOutCh, currentIndexMIDIOutCh});
   settings::append(settings::SettingsOption{"Encoder", {"Type 1", "Type 2", "\0"}, settingsEncoderDir, currentIndexEncoderDir});
-  settings::append(settings::SettingsOption{"MIDI Params", {"Off", "Send Params", "\0"}, settingsUpdateParams, currentIndexUpdateParams});
+  settings::append(settings::SettingsOption{"USB Params", {"Off", "Send Params", "\0"}, settingsUpdateParams, currentIndexUpdateParams});
   settings::append(settings::SettingsOption{"LED Int.", {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "\0"}, settingsLEDintensity, currentIndexLEDintensity});
   settings::append(settings::SettingsOption{"SLIDER LED", {"Off", "On", "\0"}, settingsSLIDERintensity, currentIndexSLIDERintensity});
   settings::append(settings::SettingsOption{"Control Type", {"CC", "NRPN", "SYSEX", "\0"}, settingsCCType, currentIndexCCType});
