@@ -27,6 +27,7 @@ int MIDIThru = midi::Thru::Off;//(EEPROM)
 String patchName = INITPATCHNAME;
 boolean encCW = true;//This is to set the encoder to increment when turned CW - Settings Option
 boolean updateParams = false;  //(EEPROM)
+boolean sendNotes = false;  //(EEPROM)
 
 int leadMix = 0;
 int leadMixmap = 0;

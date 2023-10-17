@@ -212,6 +212,9 @@ void setup() {
   //Read UpdateParams type from EEPROM
   updateParams = getUpdateParams();
 
+  //Read SendNotes type from EEPROM
+  sendNotes = getSendNotes();
+
   //USB HOST MIDI Class Compliant
   delay(400);  //Wait to turn on USB Host
   myusb.begin();
@@ -261,12 +264,18 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   }
   if (!learning) {
     MIDI.sendNoteOn(note, velocity, channel);
+    if (sendNotes) {
+      usbMIDI.sendNoteOn(note, velocity, channel);
+    }
   }
 }
 
 void myNoteOff(byte channel, byte note, byte velocity) {
   if (!learning) {
     MIDI.sendNoteOff(note, velocity, channel);
+    if (sendNotes) {
+      usbMIDI.sendNoteOff(note, velocity, channel);
+    }
   }
 }
 
@@ -363,10 +372,16 @@ void single() {
 
 void myPitchBend(byte channel, int bend) {
   MIDI.sendPitchBend(bend, channel);
+  if (sendNotes) {
+    usbMIDI.sendPitchBend(bend, channel);
+  }
 }
 
 void myAfterTouch(byte channel, byte pressure) {
   MIDI.sendAfterTouch(pressure, channel);
+    if (sendNotes) {
+    usbMIDI.sendAfterTouch(pressure, channel);
+  }
 }
 
 void allNotesOff() {
@@ -2325,6 +2340,9 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCmodWheelinput:
       MIDI.sendControlChange(control, value, channel);
+      if (sendNotes) {
+        usbMIDI.sendControlChange(control, value, channel);
+      }
       break;
 
     case CCmodWheel:
@@ -4138,7 +4156,7 @@ void midiCCOut(byte cc, byte value) {
       case 0:
         {
           switch (cc) {
-            case 128:
+            case CCpolyLearn:
               if (updateParams) {
                 usbMIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4147,7 +4165,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 129:
+            case CCtrillUp:
               if (updateParams) {
                 usbMIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4156,7 +4174,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 130:  // trill down
+            case CCtrillDown:
               if (updateParams) {
                 usbMIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4165,8 +4183,8 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 131:
-              if (updateParams) {                         // LEad learn
+            case CCleadLearn:
+              if (updateParams) {                        
                 usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
               }
@@ -4174,7 +4192,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 132:  // bass learn
+            case CCbassLearn:
               if (updateParams) {
                 usbMIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4183,7 +4201,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 133:  // strings learn
+            case CCstringsLearn:  // strings learn
               if (updateParams) {
                 usbMIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4192,7 +4210,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 134:
+            case CCphaserLeadSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4201,7 +4219,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 135:
+            case CCchorusBassSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(1, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4210,7 +4228,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 136:
+            case CCchorusStringsSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(2, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4219,7 +4237,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 137:
+            case CCchorusPolySW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4228,7 +4246,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 138:
+            case CCchorusLeadSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4237,7 +4255,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 139:
+            case CCechoBassSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4246,7 +4264,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 140:
+            case CCechoStringsSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4255,7 +4273,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 141:
+            case CCechoPolySW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4264,7 +4282,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 142:
+            case CCechoLeadSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4273,7 +4291,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 143:
+            case CCreverbBassSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4282,7 +4300,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 144:
+            case CCreverbStringsSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4291,7 +4309,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 145:
+            case CCreverbPolySW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4300,7 +4318,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 146:
+            case CCreverbLeadSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4309,7 +4327,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 147:
+            case CCarpOnSW:
               if (updateParams) {
                 usbMIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI USB is set to Out
                 usbMIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
@@ -4318,7 +4336,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
               break;
 
-            case 148:
+            case CCarpDownSW:
               // Arp Down
               if (updateParams) {
                 usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
@@ -4326,7 +4344,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI DIN is set to Out
               break;
 
-            case 149:
+            case CCarpUpSW:
               // Arp Up
               if (updateParams) {
                 usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
@@ -4334,7 +4352,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI DIN is set to Out
               break;
 
-            case 150:
+            case CCarpUpDownSW:
               // Arp UpDown
               if (updateParams) {
                 usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
@@ -4342,7 +4360,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI DIN is set to Out
               break;
 
-            case 151:
+            case CCarpRandomSW:
               // Arp Random
               if (updateParams) {
                 usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
@@ -4350,7 +4368,7 @@ void midiCCOut(byte cc, byte value) {
               MIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI DIN is set to Out
               break;
 
-            case 152:
+            case CCarpHoldSW:
               // Arp Hold
               if (updateParams) {
                 usbMIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI USB is set to Out

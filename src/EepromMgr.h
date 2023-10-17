@@ -8,6 +8,7 @@
 #define EEPROM_UPDATE_PARAMS 5
 #define EEPROM_LED_INTENSITY 6
 #define EEPROM_SLIDER_INTENSITY 7
+#define EEPROM_SEND_NOTES 8
 
 int getMIDIChannel() {
   byte midiChannel = EEPROM.read(EEPROM_MIDI_CH);
@@ -22,7 +23,7 @@ void storeMidiChannel(byte channel)
 
 boolean getEncoderDir() {
   byte ed = EEPROM.read(EEPROM_ENCODER_DIR); 
-  if (ed < 0 || ed > 1)return true; //If EEPROM has no encoder direction stored
+  if ( ed < 0 || ed > 1 )return true; //If EEPROM has no encoder direction stored
   return ed == 1 ? true : false;
 }
 
@@ -33,13 +34,24 @@ void storeEncoderDir(byte encoderDir)
 
 boolean getUpdateParams() {
   byte params = EEPROM.read(EEPROM_UPDATE_PARAMS); 
-  if (params < 0 || params > 1)return true; //If EEPROM has no encoder direction stored
+  if ( params < 0 || params > 1 )return true; //If EEPROM has no encoder direction stored
   return params == 1 ? true : false;
 }
 
 void storeUpdateParams(byte updateParameters)
 {
   EEPROM.update(EEPROM_UPDATE_PARAMS, updateParameters);
+}
+
+boolean getSendNotes() {
+  byte sn = EEPROM.read(EEPROM_SEND_NOTES); 
+  if ( sn < 0 || sn > 1 )return true; //If EEPROM has no encoder direction stored
+  return sn == 1 ? true : false;
+}
+
+void storeSendNotes(byte sendUSBNotes)
+{
+  EEPROM.update(EEPROM_SEND_NOTES, sendUSBNotes);
 }
 
 int getLastPatch() {
