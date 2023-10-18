@@ -15,7 +15,7 @@ static unsigned long learn_timer = 0;
 
 int readresdivider = 32;
 int resolutionFrig = 5;
-boolean recallPatchFlag = true;
+boolean recallPatchFlag = false;
 boolean learning = false;
 boolean noteArrived = false;
 int setCursorPos = 0;
