@@ -15,4 +15,6 @@ So the project is Teensy 4.1 based with 5*16 channel mux chips used to read pots
 
 I have included some schematics and it can hold 999 programs.
 
+Recently I created (with the help of ChatGPT) some code to disect the Cherry Audio preset files and spit them out as patch files that my editor can understand, this makes creating the patches a lot easier as now I have 450+ patches preloaded into the editor. I have uploaded this utility to the github.
+
 
