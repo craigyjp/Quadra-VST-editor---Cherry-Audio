@@ -7,7 +7,7 @@ void settingsUpdateParams();
 void settingsSendNotes();
 void settingsLEDintensity();
 void settingsSLIDERintensity();
-void settingsCCType();
+//void settingsCCType();
 
 int currentIndexMIDICh();
 int currentIndexMIDIOutCh();
@@ -16,7 +16,7 @@ int currentIndexUpdateParams();
 int currentIndexSendNotes();
 int currentIndexLEDintensity();
 int currentIndexSLIDERintensity();
-int currentIndexCCType();
+//int currentIndexCCType();
 
 void settingsMIDICh(int index, const char *value) {
   if (strcmp(value, "ALL") == 0) {
@@ -81,20 +81,20 @@ void settingsSendNotes(int index, const char *value) {
   storeSendNotes(sendNotes ? 1 : 0);
 }
 
-void settingsCCType(int index, const char *value) {
-  if (strcmp(value, "CC") == 0 ) {
-    ccType = 0;
-  } else {
-    if (strcmp(value , "NRPN") == 0 ) {
-      ccType = 1;
-    } else {
-      if (strcmp(value , "SYSEX") == 0 ) {
-        ccType = 2;
-      }
-    }
-  }
-  storeCCType(ccType);
-}
+// void settingsCCType(int index, const char *value) {
+//   if (strcmp(value, "CC") == 0 ) {
+//     ccType = 0;
+//   } else {
+//     if (strcmp(value , "NRPN") == 0 ) {
+//       ccType = 1;
+//     } else {
+//       if (strcmp(value , "SYSEX") == 0 ) {
+//         ccType = 2;
+//       }
+//     }
+//   }
+//   storeCCType(ccType);
+// }
 
 int currentIndexMIDICh() {
   return getMIDIChannel();
@@ -124,9 +124,9 @@ int currentIndexSendNotes() {
   return getSendNotes() ? 1 : 0;
 }
 
-int currentIndexCCType() {
-  return getCCType();
-}
+// int currentIndexCCType() {
+//   return getCCType();
+// }
 
 // add settings to the circular buffer
 void setUpSettings() {
@@ -137,5 +137,5 @@ void setUpSettings() {
   settings::append(settings::SettingsOption{"USB Notes", {"Off", "Send Notes", "\0"}, settingsSendNotes, currentIndexSendNotes});
   settings::append(settings::SettingsOption{"LED Int.", {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "\0"}, settingsLEDintensity, currentIndexLEDintensity});
   settings::append(settings::SettingsOption{"SLIDER LED", {"Off", "On", "\0"}, settingsSLIDERintensity, currentIndexSLIDERintensity});
-  settings::append(settings::SettingsOption{"Control Type", {"CC", "NRPN", "SYSEX", "\0"}, settingsCCType, currentIndexCCType});
+  //settings::append(settings::SettingsOption{"Control Type", {"CC", "NRPN", "SYSEX", "\0"}, settingsCCType, currentIndexCCType});
 }

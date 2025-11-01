@@ -14,11 +14,13 @@ static unsigned long vco2wave_timer = 0;
 static unsigned long learn_timer = 0;
 
 int readresdivider = 32;
-int resolutionFrig = 5;
+int resolutionFrig = 1;
 boolean recallPatchFlag = false;
 boolean learning = false;
 boolean noteArrived = false;
 int setCursorPos = 0;
+
+
 
 int CC_ON = 127;
 int CC_OFF = 127;
@@ -78,15 +80,15 @@ int polyPW = 0;
 int polyPWmap = 0;
 float polyPWstr = 0;
 
-float echoSync = 0;
+int echoSync = 0;
 
-float lfoSync = 0;
+int lfoSync = 0;
 
 int polyLFOPitch =0;
 int polyLFOPitchmap =0;
 float polyLFOPitchstr = 0;
 
-float shSource = 0;
+int shSource = 0;
 float shSourcestr = 0;
 
 int polyLFOVCF =0;
@@ -215,7 +217,7 @@ int reverbLevel = 0;
 int reverbLevelmap = 0;
 float reverbLevelstr = 0;
 
-float arpSync = 0;
+int arpSync = 0;
 float arpSyncstr = 0;
 
 int arpSpeed = 0;
@@ -303,7 +305,7 @@ int masterVolume = 0;
 int masterVolumemap = 0;
 float masterVolumestr = 0;
 
-float chorusOn = 0;
+int chorusOn = 0;
 
 int portVCO2 = 0;
 int portVCO2map = 0;

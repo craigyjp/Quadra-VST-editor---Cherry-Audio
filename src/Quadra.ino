@@ -108,6 +108,12 @@ SevenSegmentExtended display5(SEGMENT_CLK, SEGMENT_DIO);
 SevenSegmentExtended display6(SEGMENT_CLK, SEGMENT_DIO);
 SevenSegmentExtended display7(SEGMENT_CLK, SEGMENT_DIO);
 
+// Pointer array for the 8 demuxed displays
+SevenSegmentExtended* displays[] = {
+  &display0, &display1, &display2, &display3,
+  &display4, &display5, &display6, &display7
+};
+
 void setup() {
   SPI.begin();
   octoswitch.begin(PIN_DATA, PIN_LOAD, PIN_CLK);
@@ -136,55 +142,23 @@ void setup() {
   trilldisplay.print("   1");               // display INIT on the display
   delay(10);
 
-  setLEDDisplay0();
-  display0.begin();                     // initializes the display
-  display0.setBacklight(LEDintensity);  // set the brightness to intensity
-  display0.print(" 127");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(0, " 127");
 
-  setLEDDisplay1();
-  display1.begin();                     // initializes the display
-  display1.setBacklight(LEDintensity);  // set the brightness to intensity
-  display1.print("   0");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(1, "   0");
 
-  setLEDDisplay2();
-  display2.begin();                     // initializes the display
-  display2.setBacklight(LEDintensity);  // set the brightness to intensity
-  display2.print(" 127");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(2, " 127");  // display INIT on the display
 
-  setLEDDisplay3();
-  display3.begin();                     // initializes the display
-  display3.setBacklight(LEDintensity);  // set the brightness to intensity
-  display3.print("   0");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(3, "   0");  // display INIT on the display
 
-  setLEDDisplay4();
-  display4.begin();                     // initializes the display
-  display4.setBacklight(LEDintensity);  // set the brightness to intensity
-  display4.print(" 127");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(4, " 127");  // display INIT on the display
 
-  setLEDDisplay5();
-  display5.begin();                     // initializes the display
-  display5.setBacklight(LEDintensity);  // set the brightness to intensity
-  display5.print("   0");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(5, "   0");  // display INIT on the display
 
-  setLEDDisplay6();
-  display6.begin();                     // initializes the display
-  display6.setBacklight(LEDintensity);  // set the brightness to intensity
-  display6.print(" 127");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(6, " 127");  // display INIT on the display
 
-  setLEDDisplay7();
-  display7.begin();                     // initializes the display
-  display7.setBacklight(LEDintensity);  // set the brightness to intensity
-  display7.print("   0");               // display INIT on the display
-  delay(10);
+  updateLEDDisplay(7, "   0");  // display INIT on the display
 
-  setLEDDisplay0();
+  setLEDDisplay(0);
 
   cardStatus = SD.begin(BUILTIN_SDCARD);
   if (cardStatus) {
@@ -257,6 +231,14 @@ void setup() {
   recallPatch(patchNo);  //Load first patch
 }
 
+void updateLEDDisplay(int index, const char* text) {
+  setLEDDisplay(index);
+  displays[index]->begin();
+  displays[index]->setBacklight(LEDintensity);
+  displays[index]->print(text);
+  delay(10);
+}
+
 void myNoteOn(byte channel, byte note, byte velocity) {
   if (learning) {
     learningNote = note;
@@ -286,7 +268,7 @@ void convertIncomingNote() {
 
       case 1:
         leadBottomNote = learningNote;
-        setLEDDisplay1();
+        setLEDDisplay(1);
         display1.setBacklight(LEDintensity);
         displayLEDNumber(1, leadBottomNote);
         updateleadTopNote();
@@ -302,7 +284,7 @@ void convertIncomingNote() {
 
       case 3:
         polyBottomNote = learningNote;
-        setLEDDisplay3();
+        setLEDDisplay(3);
         display3.setBacklight(LEDintensity);
         displayLEDNumber(3, polyBottomNote);
         updatepolyTopNote();
@@ -318,7 +300,7 @@ void convertIncomingNote() {
 
       case 5:
         stringsBottomNote = learningNote;
-        setLEDDisplay5();
+        setLEDDisplay(5);
         display5.setBacklight(LEDintensity);
         displayLEDNumber(5, stringsBottomNote);
         updatestringsTopNote();
@@ -334,7 +316,7 @@ void convertIncomingNote() {
 
       case 7:
         bassBottomNote = learningNote;
-        setLEDDisplay7();
+        setLEDDisplay(7);
         display7.setBacklight(LEDintensity);
         displayLEDNumber(7, bassBottomNote);
         updatebassTopNote();
@@ -436,7 +418,7 @@ void updatetrillDown() {
   }
 }
 void updatemodWheel() {
-  if (modWheel > 63) {
+  if (modWheel) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("LFO Wheel", String("On"));
     }
@@ -500,7 +482,7 @@ void updateleadVCFCutoff() {
 }
 
 void updatechorusFlange() {
-  if (chorusFlange > 63) {
+  if (chorusFlange) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Mode", String("Flange"));
     }
@@ -521,7 +503,7 @@ void updatebassMix() {
 }
 
 void updatechorusSpeed() {
-  if (chorusFlange > 63) {
+  if (chorusFlange) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Flanger Speed", String(chorusSpeedstr) + " Hz");
     }
@@ -535,7 +517,7 @@ void updatechorusSpeed() {
 }
 
 void updatelfoDelay() {
-  if (lfoDelay > 63) {
+  if (lfoDelay) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("LFO Delay", String("On"));
     }
@@ -551,7 +533,7 @@ void updatelfoDelay() {
 }
 
 void updatechorusDepth() {
-  if (chorusFlange > 63) {
+  if (chorusFlange) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Flanger Depth", String(chorusDepthstr) + " %");
     }
@@ -572,7 +554,7 @@ void updatepolyPWM() {
 }
 
 void updatechorusRes() {
-  if (chorusFlange > 63) {
+  if (chorusFlange) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Flanger Res", String(chorusResstr) + " %");
     }
@@ -592,7 +574,7 @@ void updatepolyPW() {
 }
 
 void updateechoSync() {
-  if (echoSync > 63) {
+  if (echoSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Echo Sync", String("On"));
     }
@@ -608,7 +590,7 @@ void updateechoSync() {
 }
 
 void updatelfoSync() {
-  if (lfoSync > 63) {
+  if (lfoSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("LFO Sync", String("On"));
     }
@@ -631,7 +613,7 @@ void updatepolyLFOPitch() {
 }
 
 void updateshSource() {
-  if (shSource > 63) {
+  if (shSource) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("S/H Source", String("VCO 2"));
     }
@@ -726,12 +708,12 @@ void updatepolyAttack() {
 }
 
 void updatelfoSpeed() {
-  if (lfoSync < 63) {
+  if (!lfoSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("LFO Speed", String(lfoSpeedstr) + " Hz");
     }
   }
-  if (lfoSync > 63) {
+  if (lfoSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("LFO Speed", String(lfoSpeedstring));
     }
@@ -782,12 +764,12 @@ void updatebassPitch() {
 }
 
 void updateechoTime() {
-  if (echoSync < 63) {
+  if (!echoSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Echo Time", String(echoTimestr) + " ms");
     }
   }
-  if (echoSync > 63) {
+  if (echoSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Echo Time", String(echoTimestring));
     }
@@ -931,7 +913,7 @@ void updatereverbLevel() {
 }
 
 void updatearpSync() {
-  if (arpSync > 63) {
+  if (arpSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Arp Sync", String("On"));
     }
@@ -947,12 +929,12 @@ void updatearpSync() {
 }
 
 void updatearpSpeed() {
-  if (arpSync < 63) {
+  if (!arpSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Arp Speed", String(arpSpeedstr) + " Hz");
     }
   }
-  if (arpSync > 63) {
+  if (arpSync) {
     if (!recallPatchFlag) {
       showCurrentParameterPage("Arp Speed", String(arpSpeedstring));
     }
@@ -1338,6 +1320,7 @@ void updateleadVCO1wave() {
       }
       midiCCOut(CCleadVCO1wave, 127);
       midiCCOut(CCleadVCO1wave, 0);
+
       break;
 
     case 2:
@@ -1375,15 +1358,15 @@ void updateleadVCO1wave() {
 }
 
 void updateVCOWaves() {
-  for (int i = 0; i < leadVCO1wave; i++) {
+  for (int i = 1; i < leadVCO1wave; i++) {
     midiCCOut(CCleadVCO1wave, 127);
     midiCCOut(CCleadVCO1wave, 0);
   }
-  for (int i = 0; i < leadVCO2wave; i++) {
+  for (int i = 1; i < leadVCO2wave; i++) {
     midiCCOut(CCleadVCO2wave, 127);
     midiCCOut(CCleadVCO2wave, 0);
   }
-  for (int i = 0; i < polyWave; i++) {
+  for (int i = 1; i < polyWave; i++) {
     midiCCOut(CCpolyWave, 127);
     midiCCOut(CCpolyWave, 0);
   }
@@ -2366,7 +2349,7 @@ void updatearpHoldSW() {
 }
 
 void updateleadLearn() {
-  setLEDDisplay1();
+  setLEDDisplay(1);
   if (leadLearn == 1) {
     learningDisplayNumber = 1;
     learning = true;
@@ -2375,11 +2358,11 @@ void updateleadLearn() {
     displayLEDNumber(1, leadBottomNote);
   } else {
     showCurrentParameterPage("Lead Learn", "Off");
-    setLEDDisplay1();
+    setLEDDisplay(1);
     display1.setBacklight(LEDintensity);
     displayLEDNumber(1, leadBottomNote);
     delay(10);
-    setLEDDisplay0();
+    setLEDDisplay(0);
     display0.setBacklight(LEDintensity);
     displayLEDNumber(0, leadTopNote);
     learning = false;
@@ -2387,23 +2370,31 @@ void updateleadLearn() {
 }
 
 void refreshLeadNotes() {
-  setLEDDisplay1();
+  // --- 1. Update both display windows first ---
+  setLEDDisplay(1);
   display1.setBacklight(LEDintensity);
   displayLEDNumber(1, leadBottomNote);
-  midiCCOut(CCleadLearn, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
-  setLEDDisplay0();
+  delay(2);  // small latch delay
+
+  setLEDDisplay(0);
   display0.setBacklight(LEDintensity);
   displayLEDNumber(0, leadTopNote);
+  delay(2);
+
+  // --- 2. Then handle all MIDI output together ---
+  midiCCOut(CCleadLearn, midiOutCh);
+  delay(20);  // short safety gap (optional)
+
+  MIDI.sendNoteOn(leadBottomNote, 127, midiOutCh);
+  MIDI.sendNoteOff(leadBottomNote, 0, midiOutCh);
+
+  delay(5);  // short delay between notes
+  MIDI.sendNoteOn(leadTopNote, 127, midiOutCh);
+  MIDI.sendNoteOff(leadTopNote, 0, midiOutCh);
 }
 
 void updateleadTopNote() {
-  setLEDDisplay0();
+  setLEDDisplay(0);
   learningDisplayNumber = 0;
   learning = true;
   displayLEDNumber(0, leadTopNote);
@@ -2411,7 +2402,7 @@ void updateleadTopNote() {
 }
 
 void updatepolyLearn() {
-  setLEDDisplay3();
+  setLEDDisplay(3);
   if (polyLearn == 1) {
     learningDisplayNumber = 3;
     learning = true;
@@ -2422,11 +2413,11 @@ void updatepolyLearn() {
   } else {
     learning = false;
     showCurrentParameterPage("Poly Learn", "Off");
-    setLEDDisplay3();
+    setLEDDisplay(3);
     display3.setBacklight(LEDintensity);
     displayLEDNumber(3, polyBottomNote);
     delay(10);
-    setLEDDisplay2();
+    setLEDDisplay(2);
     display2.setBacklight(LEDintensity);
     displayLEDNumber(2, polyTopNote);
     midiCCOut(CCpolyLearn, 0);
@@ -2434,23 +2425,29 @@ void updatepolyLearn() {
 }
 
 void refreshPolyNotes() {
-  setLEDDisplay3();
+  setLEDDisplay(3);
   display3.setBacklight(LEDintensity);
   displayLEDNumber(3, polyBottomNote);
-  midiCCOut(CCpolyLearn, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(polyTopNote, 0, midiOutCh);
-  setLEDDisplay2();
+  delay(2);
+
+  setLEDDisplay(2);
   display2.setBacklight(LEDintensity);
   displayLEDNumber(2, polyTopNote);
+  delay(2);
+
+  midiCCOut(CCpolyLearn, midiOutCh);
+  delay(20);
+
+  MIDI.sendNoteOn(polyBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(polyBottomNote, 0, midiOutCh);
+
+  delay(5);
+  MIDI.sendNoteOn(polyTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(polyTopNote, 0, midiOutCh);
 }
 
 void updatepolyTopNote() {
-  setLEDDisplay2();
+  setLEDDisplay(2);
   learningDisplayNumber = 2;
   learning = true;
   displayLEDNumber(2, polyTopNote);
@@ -2458,7 +2455,7 @@ void updatepolyTopNote() {
 }
 
 void updatestringsLearn() {
-  setLEDDisplay5();
+  setLEDDisplay(5);
   if (stringsLearn == 1) {
     learningDisplayNumber = 5;
     learning = true;
@@ -2469,11 +2466,11 @@ void updatestringsLearn() {
   } else {
     learning = false;
     showCurrentParameterPage("Strings Learn", "Off");
-    setLEDDisplay5();
+    setLEDDisplay(5);
     display5.setBacklight(LEDintensity);
     displayLEDNumber(5, stringsBottomNote);
     delay(10);
-    setLEDDisplay4();
+    setLEDDisplay(4);
     display4.setBacklight(LEDintensity);
     displayLEDNumber(4, stringsTopNote);
     midiCCOut(CCstringsLearn, 0);
@@ -2481,23 +2478,29 @@ void updatestringsLearn() {
 }
 
 void refreshStringNotes() {
-  setLEDDisplay5();
+  setLEDDisplay(5);
   display5.setBacklight(LEDintensity);
   displayLEDNumber(5, stringsBottomNote);
-  midiCCOut(CCstringsLearn, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);
-  setLEDDisplay4();
+  delay(2);
+
+  setLEDDisplay(4);
   display4.setBacklight(LEDintensity);
   displayLEDNumber(4, stringsTopNote);
+  delay(2);
+
+  midiCCOut(CCstringsLearn, midiOutCh);
+  delay(20);
+
+  MIDI.sendNoteOn(stringsBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(stringsBottomNote, 0, midiOutCh);
+
+  delay(5);
+  MIDI.sendNoteOn(stringsTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(stringsTopNote, 0, midiOutCh);
 }
 
 void updatestringsTopNote() {
-  setLEDDisplay4();
+  setLEDDisplay(4);
   learningDisplayNumber = 4;
   learning = true;
   displayLEDNumber(4, stringsTopNote);
@@ -2505,7 +2508,7 @@ void updatestringsTopNote() {
 }
 
 void updatebassLearn() {
-  setLEDDisplay7();
+  setLEDDisplay(7);
   if (bassLearn == 1) {
     learningDisplayNumber = 7;
     learning = true;
@@ -2516,11 +2519,11 @@ void updatebassLearn() {
   } else {
     learning = false;
     showCurrentParameterPage("Bass Learn", "Off");
-    setLEDDisplay7();
+    setLEDDisplay(7);
     display7.setBacklight(LEDintensity);
     displayLEDNumber(7, bassBottomNote);
     delay(10);
-    setLEDDisplay6();
+    setLEDDisplay(6);
     display6.setBacklight(LEDintensity);
     displayLEDNumber(6, bassTopNote);
     midiCCOut(CCbassLearn, 0);
@@ -2528,23 +2531,28 @@ void updatebassLearn() {
 }
 
 void refreshBassNotes() {
-  setLEDDisplay7();
+  setLEDDisplay(7);
   display7.setBacklight(LEDintensity);
   displayLEDNumber(7, bassBottomNote);
-  midiCCOut(CCbassLearn, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(bassBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(bassBottomNote, 0, midiOutCh);
-  delay(10);
-  MIDI.sendNoteOn(bassTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
-  MIDI.sendNoteOff(bassTopNote, 0, midiOutCh);
-  setLEDDisplay6();
+  delay(2);
+
+  setLEDDisplay(6);
   display6.setBacklight(LEDintensity);
   displayLEDNumber(6, bassTopNote);
+  delay(2);
+
+  midiCCOut(CCbassLearn, midiOutCh);
+  delay(20);
+
+  MIDI.sendNoteOn(bassBottomNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(bassBottomNote, 0, midiOutCh);
+  delay(5);
+  MIDI.sendNoteOn(bassTopNote, 127, midiOutCh);  //MIDI DIN is set to Out
+  MIDI.sendNoteOff(bassTopNote, 0, midiOutCh);
 }
 
 void updatebassTopNote() {
-  setLEDDisplay6();
+  setLEDDisplay(6);
   learningDisplayNumber = 6;
   learning = true;
   displayLEDNumber(6, bassTopNote);
@@ -2556,135 +2564,41 @@ void updatePatchname() {
 }
 
 void displayLEDNumber(int displayNumber, int value) {
-  if (value > 0 && value <= 9) {
-    setCursorPos = 3;
+  int setCursorPos = 0;
+
+  // --- Determine cursor position based on value width ---
+  int absVal = abs(value);
+  if (absVal <= 9) setCursorPos = 3;
+  else if (absVal <= 99) setCursorPos = 2;
+  else if (absVal <= 999) setCursorPos = 1;
+  else setCursorPos = 0;  // 4-digit numbers
+
+  // --- Handle display selection ---
+  if (displayNumber >= 0 && displayNumber <= 7) {
+    setLEDDisplay(displayNumber);
+    delayMicroseconds(200);  // allow demux to settle
+
+    displays[displayNumber]->clear();
+    delay(1);  // allow TM1637 to latch
+    displays[displayNumber]->setCursor(0, setCursorPos);
+    displays[displayNumber]->print(value);
+    delay(2);  // give time to finish transfer
   }
-  if (value > 9 && value <= 99) {
-    setCursorPos = 2;
-  }
-  if (value > 99 && value <= 999) {
-    setCursorPos = 1;
-  }
-  if (value < 0) {
-    if (value < 0 && value >= -9) {
-      setCursorPos = 2;
-    }
-    if (value < -9 && value >= -99) {
-      setCursorPos = 1;
-    }
-  }
 
-  switch (displayNumber) {
-    case 0:
-      setLEDDisplay0();
-      display0.clear();
-      display0.setCursor(0, setCursorPos);
-      display0.print(value);
-      break;
-
-    case 1:
-      setLEDDisplay1();
-      display1.clear();
-      display1.setCursor(0, setCursorPos);
-      display1.print(value);
-      break;
-
-    case 2:
-      setLEDDisplay2();
-      display2.clear();
-      display2.setCursor(0, setCursorPos);
-      display2.print(value);
-      break;
-
-    case 3:
-      setLEDDisplay3();
-      display3.clear();
-      display3.setCursor(0, setCursorPos);
-      display3.print(value);
-      break;
-
-    case 4:
-      setLEDDisplay4();
-      display4.clear();
-      display4.setCursor(0, setCursorPos);
-      display4.print(value);
-      break;
-
-    case 5:
-      setLEDDisplay5();
-      display5.clear();
-      display5.setCursor(0, setCursorPos);
-      display5.print(value);
-      break;
-
-    case 6:
-      setLEDDisplay6();
-      display6.clear();
-      display6.setCursor(0, setCursorPos);
-      display6.print(value);
-      break;
-
-    case 7:
-      setLEDDisplay7();
-      display7.clear();
-      display7.setCursor(0, setCursorPos);
-      display7.print(value);
-      break;
-
-    case 8:
-      trilldisplay.clear();
-      trilldisplay.setCursor(0, setCursorPos);
-      trilldisplay.print(value);
-      break;
+  // --- Handle the standalone trill display separately ---
+  else if (displayNumber == 8) {
+    trilldisplay.clear();
+    delay(1);
+    trilldisplay.setCursor(0, setCursorPos);
+    trilldisplay.print(value);
   }
 }
 
-void setLEDDisplay0() {
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-}
-
-void setLEDDisplay1() {
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, LOW);
-}
-
-void setLEDDisplay2() {
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, LOW);
-}
-
-void setLEDDisplay3() {
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, LOW);
-}
-
-void setLEDDisplay4() {
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, HIGH);
-}
-
-void setLEDDisplay5() {
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, LOW);
-  digitalWrite(LED_MUX_2, HIGH);
-}
-
-void setLEDDisplay6() {
-  digitalWrite(LED_MUX_0, LOW);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, HIGH);
-}
-
-void setLEDDisplay7() {
-  digitalWrite(LED_MUX_0, HIGH);
-  digitalWrite(LED_MUX_1, HIGH);
-  digitalWrite(LED_MUX_2, HIGH);
+void setLEDDisplay(uint8_t n) {
+  digitalWrite(LED_MUX_0, n & 1);
+  digitalWrite(LED_MUX_1, (n >> 1) & 1);
+  digitalWrite(LED_MUX_2, (n >> 2) & 1);
+  delay(2);
 }
 
 void myControlChange(byte channel, byte control, int value) {
@@ -2699,6 +2613,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCmodWheel:
       modWheel = value;
+      modWheel = map(modWheel, 0, 127, 0, 1);
       updatemodWheel();
       break;
 
@@ -2740,6 +2655,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCchorusFlange:
       chorusFlange = value;
+      chorusFlange = map(chorusFlange, 0, 127, 0, 1);
       updatechorusFlange();
       break;
 
@@ -2757,6 +2673,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CClfoDelay:
       lfoDelay = value;
+      lfoDelay = map(lfoDelay, 0, 127, 0, 1);
       updatelfoDelay();
       break;
 
@@ -2786,11 +2703,13 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCechoSync:
       echoSync = value;
+      echoSync = map(echoSync, 0, 127, 0, 1);
       updateechoSync();
       break;
 
     case CClfoSync:
       lfoSync = value;
+      lfoSync = map(lfoSync, 0, 127, 0, 1);
       updatelfoSync();
       break;
 
@@ -2802,6 +2721,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCshSource:
       shSource = value;
+      shSource = map(shSource, 0, 127, 0, 1);
       updateshSource();
       break;
 
@@ -2849,7 +2769,7 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CClfoSpeed:
       lfoSpeed = value;
-      if (lfoSync < 63) {
+      if (!lfoSync) {
         lfoSpeedstr = QUADRALFO[value];
       } else {
         lfoSpeedmap = map(lfoSpeed, 0, 127, 0, 19);
@@ -2896,10 +2816,10 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCechoTime:
       echoTime = value;
-      if (echoSync < 63) {
+      if (!echoSync) {
         echoTimestr = QUADRAECHOTIME[value];
       }
-      if (echoSync > 63) {
+      if (echoSync) {
         echoTimemap = map(echoTime, 0, 127, 0, 19);
         echoTimestring = QUADRAECHOSYNC[echoTimemap];
       }
@@ -3010,13 +2930,13 @@ void myControlChange(byte channel, byte control, int value) {
 
     case CCarpSync:
       arpSync = value;
-      arpSyncstr = value;
+      arpSync = map(arpSync, 0, 127, 0, 1);
       updatearpSync();
       break;
 
     case CCarpSpeed:
       arpSpeed = value;
-      if (arpSync < 63) {
+      if (!arpSync) {
         arpSpeedstr = QUADRAARPSPEED[value];
       } else {
         arpSpeedmap = map(arpSpeed, 0, 127, 0, 19);
@@ -3531,15 +3451,15 @@ void setCurrentPatchData(String data[]) {
   polyMix = data[2].toInt();
   stringMix = data[3].toInt();
   bassMix = data[4].toInt();
-  lfoDelay = data[5].toFloat();
+  lfoDelay = data[5].toInt();
   polyPWM = data[6].toInt();
   polyPW = data[7].toInt();
-  lfoSync = data[8].toFloat();
-  shSource = data[9].toFloat();
-  modWheel = data[10].toFloat();
+  lfoSync = data[8].toInt();
+  shSource = data[9].toInt();
+  modWheel = data[10].toInt();
   stringOctave = data[11].toInt();
   bassOctave = data[12].toInt();
-  ebass16 = data[13].toFloat();
+  ebass16 = data[13].toInt();
   lfoSpeed = data[14].toInt();
   leadPW = data[15].toInt();
   leadPWM = data[16].toInt();
@@ -3565,7 +3485,7 @@ void setCurrentPatchData(String data[]) {
   chorusSpeed = data[36].toInt();
   chorusDepth = data[37].toInt();
   chorusRes = data[38].toInt();
-  echoSync = data[39].toFloat();
+  echoSync = data[39].toInt();
   polyLFOPitch = data[40].toInt();
   polyLFOVCF = data[41].toInt();
   polyVCFRes = data[42].toInt();
@@ -3583,7 +3503,7 @@ void setCurrentPatchData(String data[]) {
   reverbDecay = data[54].toInt();
   reverbDamp = data[55].toInt();
   reverbLevel = data[56].toInt();
-  arpSync = data[57].toFloat();
+  arpSync = data[57].toInt();
   arpSpeed = data[58].toInt();
   arpRange = data[59].toInt();
   ebass8 = data[60].toInt();
@@ -3687,10 +3607,11 @@ void setCurrentPatchData(String data[]) {
   updatemodWheel();
   updatestringOctave();
   updatebassOctave();
-
   updatelfoSpeed();
   updateleadPW();
   updateleadPWM();
+
+  refreshPolyNotes();
 
   //MUX 2
   updatebassPitch();
@@ -3710,6 +3631,8 @@ void setCurrentPatchData(String data[]) {
   updatestringRelease();
   updatemodSourcePhaser();
 
+  refreshStringNotes();
+
   //MUX3
   updatephaserSpeed();
   updatephaserRes();
@@ -3727,6 +3650,8 @@ void setCurrentPatchData(String data[]) {
   updatepolyDecay();
   updatepolySustain();
   updatepolyRelease();
+
+  refreshBassNotes();
 
   //MUX4
   updateechoTime();
@@ -3758,6 +3683,8 @@ void setCurrentPatchData(String data[]) {
   updateleadRelease();
   updatemasterTune();
   updatemasterVolume();
+
+  refreshLeadNotes();
 
   //Switches
 
@@ -3815,22 +3742,15 @@ void setCurrentPatchData(String data[]) {
   updatereverbStringsSW();
   updatereverbPolySW();
   updatereverbLeadSW();
-  updatearpOnSW();
   updatearpDownSW();
   updatearpUpSW();
   updatearpupDownSW();
   updatearpRandomSW();
   updatearpHoldSW();
+  updatearpOnSW();
   delay(10);
   updateTrills();
-  delay(20);
-  refreshLeadNotes();
-  delay(20);
-  refreshPolyNotes();
-  delay(20);
-  refreshStringNotes();
-  delay(20);
-  refreshBassNotes();
+
 
   //Patchname
   updatePatchname();
@@ -4504,262 +4424,235 @@ void showSettingsPage() {
 
 void midiCCOut(byte cc, byte value) {
   if (midiOutCh > 0) {
-    switch (ccType) {
-      case 0:
-        {
-          switch (cc) {
-            case CCpolyLearn:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCtrillUp:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCtrillDown:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCleadLearn:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCbassLearn:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCstringsLearn:  // strings learn
-              if (updateParams) {
-                usbMIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCphaserLeadSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCchorusBassSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(1, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(1, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCchorusStringsSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(2, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(2, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCchorusPolySW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCchorusLeadSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCechoBassSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCechoStringsSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCechoPolySW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCechoLeadSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreverbBassSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreverbStringsSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreverbPolySW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCreverbLeadSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCarpOnSW:
-              if (updateParams) {
-                usbMIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            case CCarpDownSW:
-              // Arp Down
-              if (updateParams) {
-                usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCarpUpSW:
-              // Arp Up
-              if (updateParams) {
-                usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCarpUpDownSW:
-              // Arp UpDown
-              if (updateParams) {
-                usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCarpRandomSW:
-              // Arp Random
-              if (updateParams) {
-                usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI DIN is set to Out
-              break;
-
-            case CCarpHoldSW:
-              // Arp Hold
-              if (updateParams) {
-                usbMIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI USB is set to Out
-                usbMIDI.sendNoteOff(122, 0, midiOutCh);   //MIDI USB is set to Out
-              }
-              MIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI DIN is set to Out
-              MIDI.sendNoteOff(122, 0, midiOutCh);   //MIDI USB is set to Out
-              break;
-
-            default:
-              if (updateParams) {
-                usbMIDI.sendControlChange(cc, value, midiOutCh);  //MIDI DIN is set to Out
-              }
-              MIDI.sendControlChange(cc, value, midiOutCh);  //MIDI DIN is set to Out
-              break;
-          }
+    switch (cc) {
+      case CCpolyLearn:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
         }
-      case 1:
-        {
-          // usbMIDI.sendControlChange(99, 0, midiOutCh);      //MIDI DIN is set to Out
-          // usbMIDI.sendControlChange(98, cc, midiOutCh);     //MIDI DIN is set to Out
-          // usbMIDI.sendControlChange(38, value, midiOutCh);  //MIDI DIN is set to Out
-          // usbMIDI.sendControlChange(6, 0, midiOutCh);       //MIDI DIN is set to Out
+        MIDI.sendNoteOn(120, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(120, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
 
-          // midi1.sendControlChange(99, 0, midiOutCh);      //MIDI DIN is set to Out
-          // midi1.sendControlChange(98, cc, midiOutCh);     //MIDI DIN is set to Out
-          // midi1.sendControlChange(38, value, midiOutCh);  //MIDI DIN is set to Out
-          // midi1.sendControlChange(6, 0, midiOutCh);       //MIDI DIN is set to Out
+      case CCtrillUp:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(116, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(116, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
 
-          // MIDI.sendControlChange(99, 0, midiOutCh);      //MIDI DIN is set to Out
-          // MIDI.sendControlChange(98, cc, midiOutCh);     //MIDI DIN is set to Out
-          // MIDI.sendControlChange(38, value, midiOutCh);  //MIDI DIN is set to Out
-          // MIDI.sendControlChange(6, 0, midiOutCh);       //MIDI DIN is set to Out
-          break;
+      case CCtrillDown:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
         }
-      case 2:
-        {
-          break;
+        MIDI.sendNoteOn(117, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(117, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCleadLearn:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
         }
+        MIDI.sendNoteOn(121, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(121, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCbassLearn:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(119, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(119, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCstringsLearn:  // strings learn
+        if (updateParams) {
+          usbMIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(118, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(118, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCphaserLeadSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(0, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(0, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCchorusBassSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(1, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(1, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(1, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCchorusStringsSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(2, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(2, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(2, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCchorusPolySW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(3, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(3, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCchorusLeadSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(4, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(4, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCechoBassSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(5, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(5, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCechoStringsSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(6, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(6, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCechoPolySW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(7, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(7, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCechoLeadSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(8, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(8, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCreverbBassSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(9, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(9, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCreverbStringsSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(10, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(10, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCreverbPolySW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(11, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(11, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCreverbLeadSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(12, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(12, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCarpOnSW:
+        if (updateParams) {
+          usbMIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(127, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(127, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      case CCarpDownSW:
+        // Arp Down
+        if (updateParams) {
+          usbMIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(126, 127, midiOutCh);  //MIDI DIN is set to Out
+        break;
+
+      case CCarpUpSW:
+        // Arp Up
+        if (updateParams) {
+          usbMIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(125, 127, midiOutCh);  //MIDI DIN is set to Out
+        break;
+
+      case CCarpUpDownSW:
+        // Arp UpDown
+        if (updateParams) {
+          usbMIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(124, 127, midiOutCh);  //MIDI DIN is set to Out
+        break;
+
+      case CCarpRandomSW:
+        // Arp Random
+        if (updateParams) {
+          usbMIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(123, 127, midiOutCh);  //MIDI DIN is set to Out
+        break;
+
+      case CCarpHoldSW:
+        // Arp Hold
+        if (updateParams) {
+          usbMIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI USB is set to Out
+          usbMIDI.sendNoteOff(122, 0, midiOutCh);   //MIDI USB is set to Out
+        }
+        MIDI.sendNoteOn(122, 127, midiOutCh);  //MIDI DIN is set to Out
+        MIDI.sendNoteOff(122, 0, midiOutCh);   //MIDI USB is set to Out
+        break;
+
+      default:
+        if (updateParams) {
+          usbMIDI.sendControlChange(cc, value, midiOutCh);  //MIDI DIN is set to Out
+        }
+        MIDI.sendControlChange(cc, value, midiOutCh);  //MIDI DIN is set to Out
+        break;
     }
   }
 }
@@ -5025,21 +4918,21 @@ void checkEEPROM() {
   if (oldLEDintensity != LEDintensity) {
     LEDintensity = LEDintensity * 10;
     trilldisplay.setBacklight(LEDintensity);
-    setLEDDisplay0();
+    setLEDDisplay(0);
     display0.setBacklight(LEDintensity);
-    setLEDDisplay1();
+    setLEDDisplay(1);
     display1.setBacklight(LEDintensity);
-    setLEDDisplay2();
+    setLEDDisplay(2);
     display2.setBacklight(LEDintensity);
-    setLEDDisplay3();
+    setLEDDisplay(3);
     display3.setBacklight(LEDintensity);
-    setLEDDisplay4();
+    setLEDDisplay(4);
     display4.setBacklight(LEDintensity);
-    setLEDDisplay5();
+    setLEDDisplay(5);
     display5.setBacklight(LEDintensity);
-    setLEDDisplay6();
+    setLEDDisplay(6);
     display6.setBacklight(LEDintensity);
-    setLEDDisplay7();
+    setLEDDisplay(7);
     display7.setBacklight(LEDintensity);
     oldLEDintensity = LEDintensity;
   }
@@ -5068,42 +4961,42 @@ void flashLearnLED(int displayNumber) {
     if ((learn_timer > 0) && (millis() - learn_timer >= 1000)) {
       switch (displayNumber) {
         case 0:
-          setLEDDisplay0();
+          setLEDDisplay(0);
           display0.setBacklight(LEDintensity);
           break;
 
         case 1:
-          setLEDDisplay1();
+          setLEDDisplay(1);
           display1.setBacklight(LEDintensity);
           break;
 
         case 2:
-          setLEDDisplay2();
+          setLEDDisplay(2);
           display2.setBacklight(LEDintensity);
           break;
 
         case 3:
-          setLEDDisplay3();
+          setLEDDisplay(3);
           display3.setBacklight(LEDintensity);
           break;
 
         case 4:
-          setLEDDisplay4();
+          setLEDDisplay(4);
           display4.setBacklight(LEDintensity);
           break;
 
         case 5:
-          setLEDDisplay5();
+          setLEDDisplay(5);
           display5.setBacklight(LEDintensity);
           break;
 
         case 6:
-          setLEDDisplay6();
+          setLEDDisplay(6);
           display6.setBacklight(LEDintensity);
           break;
 
         case 7:
-          setLEDDisplay7();
+          setLEDDisplay(7);
           display7.setBacklight(LEDintensity);
           break;
       }
@@ -5112,42 +5005,42 @@ void flashLearnLED(int displayNumber) {
     } else if ((learn_timer > 0) && (millis() - learn_timer >= 500)) {
       switch (displayNumber) {
         case 0:
-          setLEDDisplay0();
+          setLEDDisplay(0);
           display0.setBacklight(0);
           break;
 
         case 1:
-          setLEDDisplay1();
+          setLEDDisplay(1);
           display1.setBacklight(0);
           break;
 
         case 2:
-          setLEDDisplay2();
+          setLEDDisplay(2);
           display2.setBacklight(0);
           break;
 
         case 3:
-          setLEDDisplay3();
+          setLEDDisplay(3);
           display3.setBacklight(0);
           break;
 
         case 4:
-          setLEDDisplay4();
+          setLEDDisplay(4);
           display4.setBacklight(0);
           break;
 
         case 5:
-          setLEDDisplay5();
+          setLEDDisplay(5);
           display5.setBacklight(0);
           break;
 
         case 6:
-          setLEDDisplay6();
+          setLEDDisplay(6);
           display6.setBacklight(0);
           break;
 
         case 7:
-          setLEDDisplay7();
+          setLEDDisplay(7);
           display7.setBacklight(0);
           break;
       }
