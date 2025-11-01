@@ -3,7 +3,7 @@ A Hardware editor for the Cherry Audio Quadra VST
 
 This is my attempt to make a physical hardware editor for the Cherry Audio Arp Quadra VST. 
 
-![Synth](photos/synth.jpg)
+![Synth](photos/synth1.jpg)
 
 First of all let me say I started building this without really understanding how the Quadra was controlled over MIDI, my knowledge was based on my experience with Arturia and building an editor for their CS80 VST.
 
